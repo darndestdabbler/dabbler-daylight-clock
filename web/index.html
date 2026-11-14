@@ -375,7 +375,14 @@
     // ===========================================
     // EVENT LISTENERS (no inline handlers — works in sandboxed iframes)
     // ===========================================
-    document.getElementById('btn-solar').addEventListener('click', function() { toggleSolar(); });
+    document.getElementById('btn-solar').addEventListener('click', function() {
+        var hiding = solarEnabled;
+        toggleSolar();
+        try {
+            if (hiding) localStorage.setItem(DAYLIGHT_KEY, 'hidden');
+            else localStorage.removeItem(DAYLIGHT_KEY);
+        } catch (e) { /* storage unavailable */ }
+    });
     document.getElementById('timezone-select').addEventListener('change', function() { onTimezoneChange(); });
     document.getElementById('date-override').addEventListener('change', function() { onDateOverrideChange(); });
     document.getElementById('theme-select').addEventListener('change', function() { setTheme(this.value, true); });
@@ -772,7 +779,18 @@
         setSystem(saved, false);
     })();
     updateClock();
-    dbg('Clock initialized. Select a city timezone, then click the sun button.');
+    dbg('Clock initialized.');
+
+    // ===========================================
+    // DAYLIGHT (shown from the start unless hiding it was the last choice)
+    // ===========================================
+    const DAYLIGHT_KEY = 'quadi-dozenal-daylight';
+
+    (function initDaylight() {
+        var saved = null;
+        try { saved = localStorage.getItem(DAYLIGHT_KEY); } catch (e) { /* storage unavailable */ }
+        if (saved !== 'hidden') toggleSolar();
+    })();
 
 </script>
 

@@ -17,10 +17,11 @@ The numbered sessions are declared from `session-plan.md`; each one's task is wh
 | 3 | Skeleton — import v3, the pure core and the test suite | no | 2026-11-14 |
 | 4 | The two time systems in the core | no | 2026-11-14 |
 | 5 | The 24 × 60 × 60 face, the system selector and the other system's reading | no | 2026-11-14 |
-| 6 | The About page | — | not declared |
-| 7 | The installable app | — | not declared |
-| 8 | Packaging | — | not declared |
-| 9 | Release 1.0.0 (release: 1.0.0) | — | not declared |
+| 6 | Daylight shown from the start | no | 2026-11-14 |
+| 7 | The About page | — | not declared |
+| 8 | The installable app | — | not declared |
+| 9 | Packaging | — | not declared |
+| 10 | Release 1.0.0 (release: 1.0.0) | — | not declared |
 
 ### Session 1 — Author or import the solution plan
 
@@ -51,3 +52,9 @@ Add the two time systems to the pure core and draw the 48 clock through them. In
 **Releasable: no.**
 
 Put both time systems on the page. web/index.html gains a system selector in its controls (24 x 60 x 60, the default, and the 48 clock), remembered in localStorage inside try/catch the way the theme is; choosing a system clears and redraws the mask ticks and the face labels from faceLayout, and from then on updateClock turns the hands by handAngles and writes the digital readout by formatReading of the chosen system (base-10 24-hour HH:MM:SS, or the 48 clock's dozenal). The Z subpath is removed from the zan hand's path so no hand carries a Z in either system. The italic 12-hour civil line under the readout is replaced by the other system's reading, formatReading of the system not shown, drawn with the readout's own glyphs through renderNumber so the 48 clock's X and E appear as the turned 2 and 3.
+
+### Session 6 — Daylight shown from the start
+
+**Releasable: no.**
+
+Show daylight from the moment web/index.html opens. At start-up the page turns daylight on through the same path the sun button takes today (toggleSolar): with Local Time selected the browser is asked for location at once, and where location is refused or unavailable the page falls back to the timezone's city exactly as the button already does. The button stays and reads "Hide Daylight Time" while daylight shows. Hiding is remembered under its own localStorage key inside try/catch, as the theme and the system are: a click that hides daylight saves that, a click that shows it again clears it, and a later visit opens with daylight hidden only when hiding was the last choice saved; with nothing saved (or storage unavailable), daylight shows.
