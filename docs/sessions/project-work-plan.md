@@ -21,7 +21,7 @@ The numbered sessions are declared from `session-plan.md`; each one's task is wh
 | 7 | The About page | no | 2026-11-14 |
 | 8 | The installable app | no | 2026-11-14 |
 | 9 | Packaging | no | 2026-11-14 |
-| 10 | Release 1.0.0 (release: 1.0.0) | — | not declared |
+| 10 | Release 1.0.0 (release: 1.0.0) | yes | 2026-11-14 |
 
 ### Session 1 — Author or import the solution plan
 
@@ -76,3 +76,9 @@ Make the clock an installable, offline web app that fits a phone. Add web/manife
 **Releasable: no.**
 
 Declare how this repository is packaged and published by adding a `packaging:` block to dabbler.yaml, and nothing else. The pack step tars the web/ folder into {output}/daylight-clock.tar.gz with `tar -czf ... -C web .`; the push step copies {artifact} into the feed folder D:\Releases\daylight-clock (the folder the person chose) with `node -e` and fs.copyFileSync, run without a shell and with no secret. The block is proven by `dabbler packaging --rehearse`.
+
+### Session 10 — Release 1.0.0 (release: 1.0.0)
+
+**Releasable: yes.**
+
+Release 1.0.0: the framework packs and publishes what is on the trunk.
