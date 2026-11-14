@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Session 001 transcript</title>
+<style>
+:root {
+  --page: #ffffff;
+  --ink: #1f1f1f;
+  --faint: #e4e4e4;
+  --panel: #f6f6f6;
+  --tone-milestone: #2a5db0;
+  --tone-good: #256029;
+  --tone-warn: #8a6100;
+  --tone-bad: #a31515;
+  --tone-muted: #6b6b6b;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --page: #1e1e1e;
+    --ink: #d4d4d4;
+    --faint: #3a3a3a;
+    --panel: #252526;
+  --tone-milestone: #3874db;
+  --tone-good: #54a33b;
+  --tone-warn: #b79427;
+  --tone-bad: #f14c4c;
+  --tone-muted: #8c8c8c;
+  }
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  padding: 24px 16px 64px;
+  background: var(--page);
+  color: var(--ink);
+  font: 14px/1.6 ui-sans-serif, system-ui, "Segoe UI", sans-serif;
+}
+main { max-width: 68rem; margin: 0 auto; }
+h1 { font-size: 1.4rem; margin: 0 0 .25rem; }
+h2 { font-size: 1.05rem; margin: 2.5rem 0 .75rem; border-bottom: 1px solid var(--faint); padding-bottom: .3rem; }
+.stamp { color: var(--tone-muted); font-size: .85rem; margin: 0 0 .25rem; }
+.mono, pre, code { font-family: ui-monospace, "Cascadia Mono", Consolas, monospace; }
+.lines { font-family: ui-monospace, "Cascadia Mono", Consolas, monospace; font-size: 13px; }
+.line { white-space: pre-wrap; word-break: break-word; padding-left: 10.5ch; text-indent: -10.5ch; }
+.at { color: var(--tone-muted); }
+table { border-collapse: collapse; width: 100%; font-size: 13px; }
+th, td { text-align: left; padding: .35rem .6rem; border-bottom: 1px solid var(--faint); vertical-align: top; }
+th { color: var(--tone-muted); font-weight: 600; }
+details { margin: .5rem 0; }
+summary { cursor: pointer; }
+td details { margin: 0; }
+tr:has(details:not([open])) + tr.findings { display: none; }
+tr.findings > td { padding: 0 0 .5rem 1.5rem; }
+pre { background: var(--panel); padding: .75rem; overflow-x: auto; white-space: pre-wrap; word-break: break-word; font-size: 12.5px; }
+.stop, .cancelled { border-left: 3px solid var(--tone-bad); background: var(--panel); padding: .6rem .9rem; }
+.milestone { color: var(--tone-milestone); }
+.good { color: var(--tone-good); }
+.warn { color: var(--tone-warn); }
+.bad { color: var(--tone-bad); }
+.muted { color: var(--tone-muted); }
+</style>
+</head>
+<body>
+<main>
+<h1>Session 001 transcript</h1>
+<p class="stamp">Rendered 2026-11-14T08:48:03.676Z by dabbler-ai-router 3.32.4 at ef942c02a4523b2fb3c0ae5bcf5c6d19e9e4c50a.</p>
+<p class="stamp">Engine cli, last phase <span class="milestone">log</span>, started 2026-11-14T03:00:52.019-05:00.</p>
+<h2>Session Plan</h2>
+<h3>Session 1: Author or import the solution plan</h3>
+<ol><li>Register.</li><li>The brief is the prompt this session was started with, or <code>docs/planning/brief.md</code>: what the solution is — its purpose, who uses it, what it must do and what is out of scope, what success looks like, and whether a plan or notes already exist. With neither, ask the person who started the session for it and write their answer to that path before any work. The plan's substance is theirs: do not search neighbouring directories for one, and do not draft one from the folder name. Before any module is proposed, ask them how production is split: what runs separately in production, and which part may talk to the database? Offer the default -- an application tier that calls an API tier, and only the API tier talks to the database. Then create — or import — <code>docs/planning/solution-plan.md</code>: the objective a reader can act on; the *Production split* they answered; the *Handoff artifacts*, what each separately running part is handed over as, with the standard command for its form -- for .NET an IIS site package (<code>dotnet publish</code>) or a Windows Service (a Worker Service published for a service host), for Java a runnable jar or a war (<code>mvn package</code> writing into <code>{output}</code>, which <code>packaging.pack</code> requires -- say through a property the POM's jar or war plugin takes as its output directory, <code>-Dhandoff.dir={output}</code>) or an image (Spring Boot's <code>build-image</code>), for the database a SQL migration script (<code>dotnet ef migrations script --idempotent</code>); the real form is produced later, and a tutorial produces the easiest one to test; the modules, with what each is responsible for, the contract each exposes (what must be true going in, what is guaranteed coming out, how it fails), the dependency direction, the reason for each cut and the cuts deferred — one module is a fine answer, and most small solutions are one; and the phases or feature areas with their key deliverables, each scoped to a handful of focused AI sessions. A repository that already has <code>docs/planning/project-plan.md</code> amends that file instead.</li><li>Where the plan has several modules, say in it how each is a project: a <code>.csproj</code> listed in the root solution file for .NET, or a Maven module listed in the parent <code>pom.xml</code>, each reaching a sibling by project reference -- a <code>&lt;ProjectReference&gt;</code>, or a dependency at <code>${project.version}</code>. The first numbered session, the skeleton, writes the projects.</li></ol>
+<p>The framework then verifies the work cross-provider, runs the suites as the run of record and closes the session. These are the framework's, not steps to plan.</p>
+<p>This session writes the plan and nothing else: it creates, edits or deletes no code, project, build file, test, <code>dabbler.yaml</code> suite or packaging.</p>
+<p><strong>Creates:</strong> <code>docs/planning/solution-plan.md</code>. A later revision is just another plan session that amends the same file.</p>
+<h2>Work Plan</h2>
+<p>Record the person's brief in docs/planning/brief.md and write docs/planning/solution-plan.md for the Daylight Clock: a generalization of the existing single-page quadi-dozenal clock (D:\quadi-dozenal-clock-v3.html) that lets the user choose how the day is divided -- 24x60x60 by default, with a built-in 48x48x48 option (the &quot;48 clock&quot;) -- delivered as an installable, offline-capable static web app for phones. The plan states the objective, the production split (one static web app, no server tier, no database), the handoff artifact (the static site folder), the module(s) with their contracts and the cuts deferred (including a native Wear OS watch face), and the phases with their key deliverables: importing the existing page, the two-system time model and faces (Z removed from the zan hand; 24x60x60 face with 0-3 quarter-day majors and 2/4 minors, base-10 24-hour digital readout), showing the other system's reading under the digital display, an About page explaining the 48 clock and the daylight/longest-day/shortest-day markings, and PWA installability.</p>
+<p>Landed <a href="https://github.com/darndestdabbler/dabbler-daylight-clock/commit/3d174fbbf1f00097bf4636fe04d4663455046047"><code>3d174fbbf1f00097bf4636fe04d4663455046047</code></a>.</p>
+<table>
+<tr><th>Step</th><th>Ask</th><th>Files</th><th>Checks</th><th>Accepted</th></tr>
+<tr><td>Brief</td><td><p>Write docs/planning/brief.md from the person's answers: purpose (generalize the quadi-dozenal daylight clock so the user picks the day's division), users (people on phones, possibly a watch later), what it must do (24x60x60 default and 48x48x48 preset; a 24x60x60 face with 0/1/2/3 quarter-day majors and 2/4 minors, base-10 24-hour digital time; Z removed from the zan hand everywhere; the other system's reading shown beneath the digital display; an About page explaining the 48 clock and the daylight, longest-day and shortest-day markings; installable web app), out of scope (custom divisions, native Wear OS face for now, any server or database), what success looks like, and the existing material (the v3 HTML file).</p></td><td><span class="mono">docs/planning/brief.md</span></td><td><code>node -e const s=require('fs').readFileSync('docs/planning/brief.md','utf8');for(const h of ['## Purpose','## Users','## Must do','## Out of scope','## Success','## Existing material']){if(!s.includes(h)){console.error('missing '+h);process.exit(1)}}</code></td><td>yes</td></tr>
+<tr><td>Solution plan</td><td><p>Write docs/planning/solution-plan.md: the objective; the Production split (a single static web app running in the browser, no API tier and no database, as the person chose); the Handoff artifacts (the static site folder -- index.html, manifest, service worker, icons -- copied to any static host); the modules (one web app, with an internal split between a pure time-system/solar calculation script testable under Node and the page that renders it), each with responsibility, contract (inputs, guarantees, failure), dependency direction and reason for the cut, and the deferred cuts (Wear OS watch face, custom divisions, a separate project per concern); and the phases with key deliverables, each scoped to a handful of sessions.</p></td><td><span class="mono">docs/planning/solution-plan.md</span></td><td><code>node -e const s=require('fs').readFileSync('docs/planning/solution-plan.md','utf8');for(const h of ['## Objective','## Production split','## Handoff artifacts','## Modules','## Deferred cuts','## Phases']){if(!s.includes(h)){console.error('missing '+h);process.exit(1)}}</code></td><td>yes</td></tr>
+</table>
+<p>Non-goals:</p>
+<ul><li>No code, HTML, project, build file, test, dabbler.yaml suite or packaging is created or changed in this session; it writes only the brief and the solution plan.</li><li>The existing clock at D:\quadi-dozenal-clock-v3.html is not copied into this repository in this session; importing it is a phase the plan names for a later numbered session.</li><li>No numbered work sessions are appended to session-plan.md; breaking the plan into sessions is Session 2's work.</li><li>A native Wear OS watch face and user-defined custom day divisions are not planned as deliverables; the plan records them as deferred cuts.</li></ul>
+<h2>What the framework said</h2>
+<div class="lines"><div class="line"><span class="at">[08:00:52]</span> <span class="muted">run-started</span> session=001 mode=pull</div>
+<div class="line"><span class="at">[08:00:52]</span> <span class="muted">instruction-issued</span> seq=1 kind=step step=plan</div>
+<div class="line"><span class="at">[08:43:54]</span> <span class="muted">run-resumed</span> session=001 phase=<span class="milestone">plan</span> mode=pull</div>
+<div class="line"><span class="at">[08:43:54]</span> <span class="muted">plan-accepted</span> steps=[&quot;brief&quot;,&quot;solution-plan&quot;] non_goals=4</div>
+<div class="line"><span class="at">[08:43:57]</span> <span class="milestone">phase</span> phase=<span class="milestone">work</span></div>
+<div class="line"><span class="at">[08:43:57]</span> <span class="muted">instruction-issued</span> seq=2 kind=step step=brief</div>
+<div class="line"><span class="at">[08:44:22]</span> <span class="muted">run-resumed</span> session=001 phase=<span class="milestone">work</span> mode=pull</div>
+<div class="line"><span class="at">[08:44:28]</span> <span class="muted">check-passed</span> step=brief argv=[&quot;node&quot;,&quot;-e&quot;,&quot;const s=require('fs').readFileSync('docs/planning/brief.md','utf8');for(const h of ['## Purpose','## Users','## Must do','## Out of scope','## Success','## Existing material']){if(!s.includes(h)){console.error('missing '+h);process.exit(1)}}&quot;]</div>
+<div class="line"><span class="at">[08:44:31]</span> <span class="muted">report-accepted</span> seq=2 step=brief files=[&quot;docs/planning/brief.md&quot;] notes=Recorded the person's brief: purpose, users, must-do, out of scope, success, existing material.</div>
+<div class="line"><span class="at">[08:44:31]</span> <span class="muted">instruction-issued</span> seq=3 kind=step step=solution-plan</div>
+<div class="line"><span class="at">[08:45:35]</span> <span class="muted">run-resumed</span> session=001 phase=<span class="milestone">work</span> mode=pull</div>
+<div class="line"><span class="at">[08:45:42]</span> <span class="muted">check-passed</span> step=solution-plan argv=[&quot;node&quot;,&quot;-e&quot;,&quot;const s=require('fs').readFileSync('docs/planning/solution-plan.md','utf8');for(const h of ['## Objective','## Production split','## Handoff artifacts','## Modules','## Deferred cuts','## Phases']){if(!s.includes(h)){console.error('missing '+h);process.exit(1)}}&quot;]</div>
+<div class="line"><span class="at">[08:45:45]</span> <span class="muted">report-accepted</span> seq=3 step=solution-plan files=[&quot;docs/planning/solution-plan.md&quot;] notes=Wrote the solution plan: objective, production split (static web app, no DB), handoff (static folder zip), one module with pure core/page cut, deferred cuts, four phases.</div>
+<div class="line"><span class="at">[08:45:45]</span> <span class="milestone">phase</span> phase=<span class="milestone">preverify</span></div>
+<div class="line"><span class="at">[08:45:45]</span> <span class="milestone">phase</span> phase=<span class="milestone">verify</span></div>
+<div class="line"><span class="at">[08:45:49]</span> <span class="muted">job-started</span> name=verification pid=17364 log=.dabbler/runs/s1/driver/jobs/verification.log</div>
+<div class="line"><span class="at">[08:47:00]</span> <span class="muted">job-finished</span> name=verification exit=<span class="good">0</span> log=.dabbler/runs/s1/driver/jobs/verification.log</div>
+<div class="line"><span class="at">[08:47:00]</span> <span class="muted">verification-passed</span></div>
+<div class="line"><span class="at">[08:47:00]</span> <span class="milestone">phase</span> phase=<span class="milestone">run-of-record</span></div>
+<div class="line"><span class="at">[08:47:00]</span> <span class="muted">run-of-record-none</span> reason=no suite declared; nothing to run</div>
+<div class="line"><span class="at">[08:47:00]</span> <span class="milestone">phase</span> phase=<span class="milestone">land</span></div>
+<div class="line"><span class="at">[08:47:24]</span> <span class="muted">landed</span> commit=3d174fbbf1f00097bf4636fe04d4663455046047</div>
+<div class="line"><span class="at">[08:47:24]</span> <span class="milestone">phase</span> phase=<span class="milestone">publish</span></div>
+<div class="line"><span class="at">[08:47:25]</span> <span class="muted">publish-skipped</span> reason=an ordinary session never publishes</div>
+<div class="line"><span class="at">[08:47:25]</span> <span class="milestone">phase</span> phase=<span class="milestone">close</span></div>
+<div class="line"><span class="at">[08:47:29]</span> <span class="muted">job-started</span> name=close pid=60352 log=.dabbler/runs/s1/driver/jobs/close.log</div>
+<div class="line"><span class="at">[08:48:03]</span> <span class="muted">job-finished</span> name=close exit=<span class="good">0</span> log=.dabbler/runs/s1/driver/jobs/close.log</div>
+<div class="line"><span class="at">[08:48:03]</span> <span class="milestone">phase</span> phase=<span class="milestone">log</span></div></div>
+<h2>Verification</h2>
+<table>
+<tr><th>Round</th><th>Phase</th><th>Verdict</th><th>Reviewer</th><th>Provider</th><th>Transport</th><th>Findings</th></tr>
+<tr><td>1</td><td>full</td><td><span class="good">VERIFIED</span></td><td>gpt-5.6-terra</td><td>openai</td><td>api</td><td><details><summary>1 finding</summary></details></td></tr><tr class="findings"><td colspan="7"><table>
+<tr><th>#</th><th>Severity</th><th>Finding</th><th>Response</th></tr>
+<tr><td>0</td><td><strong>minor</strong></td><td>**Nit:** `docs/planning/solution-plan.md` is ambiguous about tick hierarchy for the 24-hour face: it calls 0–3 the quarter-day “majors” and 2/4 “minors,” but also states that “A major tick falls every 2 hours.” Define whether every two-hour mark is visually a major tick or whether only quarter-day marks are major, so a later implementation does not render a face contrary to the requested 0–3-major / 2-and-4-minor hierarchy.</td><td>not answered</td></tr>
+</table></td></tr>
+</table>
+<h2>Test runs</h2>
+<p>No test run was recorded.</p>
+<h2>Jobs</h2>
+<div><strong>close</strong> exit <span class="good">0</span> <span class="muted">(passed -- output not carried; dabbler transcript --full carries it)</span></div>
+<div><strong>verification</strong> exit <span class="good">0</span> <span class="muted">(passed -- output not carried; dabbler transcript --full carries it)</span></div>
+</main>
+</body>
+</html>
