@@ -1,0 +1,47 @@
+# Project work plan — sessions
+
+**Written by `dabbler` as a fold of `activity-log.json`.**
+Hand edits are overwritten by the next append. The record is the log;
+this page is one view of it.
+
+---
+
+## Sessions
+
+The numbered sessions are declared from `session-plan.md`; each one's task is what its own plan step declared.
+
+| # | Session | Releasable | Declared |
+| ---: | --- | --- | --- |
+| 1 | Author or import the solution plan | no | 2026-11-14 |
+| 2 | Challenge the plan, then break it into numbered sessions | no | 2026-11-14 |
+| 3 | Skeleton — import v3, the pure core and the test suite | no | 2026-11-14 |
+| 4 | The two time systems in the core | no | 2026-11-14 |
+| 5 | The 24 × 60 × 60 face, the system selector and the other system's reading | — | not declared |
+| 6 | The About page | — | not declared |
+| 7 | The installable app | — | not declared |
+| 8 | Packaging | — | not declared |
+| 9 | Release 1.0.0 (release: 1.0.0) | — | not declared |
+
+### Session 1 — Author or import the solution plan
+
+**Releasable: no.**
+
+Record the person's brief in docs/planning/brief.md and write docs/planning/solution-plan.md for the Daylight Clock: a generalization of the existing single-page quadi-dozenal clock (D:\quadi-dozenal-clock-v3.html) that lets the user choose how the day is divided -- 24x60x60 by default, with a built-in 48x48x48 option (the "48 clock") -- delivered as an installable, offline-capable static web app for phones. The plan states the objective, the production split (one static web app, no server tier, no database), the handoff artifact (the static site folder), the module(s) with their contracts and the cuts deferred (including a native Wear OS watch face), and the phases with their key deliverables: importing the existing page, the two-system time model and faces (Z removed from the zan hand; 24x60x60 face with 0-3 quarter-day majors and 2/4 minors, base-10 24-hour digital readout), showing the other system's reading under the digital display, an About page explaining the 48 clock and the daylight/longest-day/shortest-day markings, and PWA installability.
+
+### Session 2 — Challenge the plan, then break it into numbered sessions
+
+**Releasable: no.**
+
+Challenge the cuts in docs/planning/solution-plan.md and record the answers in a new Rationale section of that plan: whether each module (web/clock-core.js, the page files) should exist, whether each contract is a promise a test can prove, and whether the page -> core dependency direction keeps the decisions most likely to change (the systems table, face layout, hand motion, the solar algorithm, and the device-time-to-seconds-of-day conversion across timezones and DST) where a test reaches them; decide each deferred cut (Wear OS face and user-defined divisions stay deferred with reasons; separate packages and a build step are closed as 'no'); and correct the handoff command, since `tar -a` zip output works only with Windows' bsdtar and not with Git Bash's GNU tar. Then append numbered sessions 3 onward to docs/sessions/session-plan.md: the skeleton session (import v3 into web/index.html, web/clock-core.js with its tests, the node --test suite with a hang limit in dabbler.yaml and the architecture test), the two-time-systems core, the 24x60x60 face with selector, Z-less hands and the other system's reading, the About page, the installable app, one packaging session, and a stepless release session proposing version 1.0.0 for the person to approve.
+
+### Session 3 — Skeleton — import v3, the pure core and the test suite
+
+**Releasable: no.**
+
+Lay the skeleton of the daylight clock: import D:\quadi-dozenal-clock-v3.html byte for byte as web/index.html; move secondsOfDay(date, tz) (new) and the v3 solar functions getSunTimes, getTimezoneOffset, utcMinutesToClockAngle, getSolarAngles, describeArc and spanDegrees, unchanged in behaviour, into a DOM-free classic script web/clock-core.js that exposes ClockCore on globalThis and as module.exports under Node, and make index.html load it first and call those functions through ClockCore while its 48-clock arithmetic stays inline; pin the core with tests/clock-core.test.js (v3's outputs for a fixed date and city, the polar-night null, secondsOfDay at a DST change in America/New_York); and declare the node suite in dabbler.yaml under testing.suites with tests/architecture.test.js enforcing the plan's two rules (no DOM globals in clock-core.js; no network calls under web/ except sw.js filling its own cache).
+
+### Session 4 — The two time systems in the core
+
+**Releasable: no.**
+
+Add the two time systems to the pure core and draw the 48 clock through them. In web/clock-core.js, add a SYSTEMS table for "24x60x60" and "48x48x48" (three divisions, a digit base, and face-label data each) and four functions over it: reading(sec, system) gives three integers each in [0, division); handAngles(sec, system) gives three angles in [0, 360) where the first two hands sweep and the third steps whole units; formatReading(sec, system) gives base-10 HH:MM:SS for 24x60x60 and two dozenal digits per unit (X = 10, E = 11) for the 48 clock; faceLayout(system) gives the tick list (angle, major) and the label list (angle, text, major). An unknown system id or a time outside [0, 86400) throws RangeError. tests/clock-core.test.js gains the cases the plan's rationale names: 06:00:00 in both systems, a third hand that steps whole units, the 24x60x60 face's 24 ticks with majors every 2 hours and labels 0 1 2 3 / 2 4, the 48 clock's 48 ticks and labels exactly as v3 draws them, and the RangeErrors. Then web/index.html's generateTicks, drawAnalogFace and updateClock use faceLayout, handAngles and formatReading for "48x48x48" in place of their inline arithmetic, with the 48 clock's look and readout unchanged.
