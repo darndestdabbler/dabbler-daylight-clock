@@ -320,6 +320,9 @@
         spacing: -2.0
     };
 
+    // The time system the face and readout are drawn in (see ClockCore.SYSTEMS)
+    const SYSTEM = '48x48x48';
+
     const CX_FACE = 0;
     const CY_FACE = 0;
     const WEDGE_RADIUS = 103;
@@ -413,16 +416,14 @@
     // ===========================================
     function generateTicks() {
         var maskGroup = document.getElementById('mask-ticks-container');
-        for (var i = 0; i < 48; i++) {
-            var isMajor = (i % 4 === 0);
-            var ref = isMajor ? '#tick-major' : '#tick-minor';
-            var angle = i * 7.5; 
+        ClockCore.faceLayout(SYSTEM).ticks.forEach(function(tick) {
+            var ref = tick.major ? '#tick-major' : '#tick-minor';
             var useMask = document.createElementNS("http://www.w3.org/2000/svg", "use");
             useMask.setAttribute("href", ref);
-            useMask.setAttribute("transform", "rotate(" + angle + ")");
+            useMask.setAttribute("transform", "rotate(" + tick.angle + ")");
             useMask.setAttribute("fill", "black");
             maskGroup.appendChild(useMask);
-        }
+        });
     }
 
     // ===========================================
@@ -674,22 +675,14 @@
     function drawAnalogFace() {
         var container = document.getElementById('analog-numbers');
         container.innerHTML = ""; 
-        var points = [
-            {v:0, l:"0", maj:true}, {v:4, l:"4", maj:false}, {v:8, l:"8", maj:false},
-            {v:12, l:"1", maj:true}, {v:16, l:"4", maj:false}, {v:20, l:"8", maj:false},
-            {v:24, l:"2", maj:true}, {v:28, l:"4", maj:false}, {v:32, l:"8", maj:false},
-            {v:36, l:"3", maj:true}, {v:40, l:"4", maj:false}, {v:44, l:"8", maj:false}
-        ];
-
-        for (var i = 0; i < points.length; i++) {
-            var pt = points[i];
-            var r = pt.maj ? CONFIG.radiusMajor : CONFIG.radiusMinor;
-            var sc = pt.maj ? CONFIG.scaleMajor : CONFIG.scaleMinor;
-            var angle = (pt.v / 48) * (2 * Math.PI) - (Math.PI / 2);
+        ClockCore.faceLayout(SYSTEM).labels.forEach(function(label) {
+            var r = label.major ? CONFIG.radiusMajor : CONFIG.radiusMinor;
+            var sc = label.major ? CONFIG.scaleMajor : CONFIG.scaleMinor;
+            var angle = (label.angle - 90) * Math.PI / 180;
             var x = r * Math.cos(angle);
             var y = r * Math.sin(angle);
-            renderNumber(container, pt.l, x, y, sc, sc, "var(--numeral)");
-        }
+            renderNumber(container, label.text, x, y, sc, sc, "var(--numeral)");
+        });
     }
 
     function updateClock() {
@@ -717,25 +710,14 @@
         }
 
         var secOfDay = ClockCore.secondsOfDay(now, tz);
-        var dayFrac = secOfDay / 86400;
-        var totalMecs = dayFrac * (48 * 48 * 48); 
-        var dour = Math.floor(totalMecs / 2304);
-        var rem1 = totalMecs % 2304;
-        var zan = Math.floor(rem1 / 48);
-        var mec = Math.floor(rem1 % 48);
-
-        document.getElementById('use-hand-dour').setAttribute("transform", 'rotate(' + (dayFrac * 360) + ')');
-        document.getElementById('use-hand-zan').setAttribute("transform", 'rotate(' + ((rem1 / 2304) * 360) + ')');
-        document.getElementById('use-hand-mec').setAttribute("transform", 'rotate(' + ((mec / 48) * 360) + ')');
+        var hands = ClockCore.handAngles(secOfDay, SYSTEM);
+        document.getElementById('use-hand-dour').setAttribute("transform", 'rotate(' + hands[0] + ')');
+        document.getElementById('use-hand-zan').setAttribute("transform", 'rotate(' + hands[1] + ')');
+        document.getElementById('use-hand-mec').setAttribute("transform", 'rotate(' + hands[2] + ')');
 
         var digContainer = document.getElementById('digital-display');
-        digContainer.innerHTML = ""; 
-        var toDoz = function(n) {
-            var tens = Math.floor(n / 12);
-            var units = Math.floor(n % 12);
-            var uChar = (units === 10) ? 'X' : (units === 11) ? 'E' : units.toString();
-            return tens.toString() + uChar; 
-        };
+        digContainer.innerHTML = "";
+        var groups = ClockCore.formatReading(secOfDay, SYSTEM).split(':');
 
         var cx = CX_FACE; 
         var cy = CONFIG.digitalY;
@@ -747,11 +729,11 @@
         var midDour = cx - gap;
         var midMec = cx + gap;
         
-        renderNumber(digContainer, toDoz(dour), midDour, cy, scX, scY, CONFIG.digitalColorDours);
+        renderNumber(digContainer, groups[0], midDour, cy, scX, scY, CONFIG.digitalColorDours);
         renderNumber(digContainer, ":", midDour + (gap / 2), cy, scX * 0.75, scY * 0.75, CONFIG.digitalColorColons);
-        renderNumber(digContainer, toDoz(zan), midZan, cy, scX, scY, CONFIG.digitalColorZans);
+        renderNumber(digContainer, groups[1], midZan, cy, scX, scY, CONFIG.digitalColorZans);
         renderNumber(digContainer, ":", midZan + (gap / 2), cy, scX * 0.75, scY * 0.75, CONFIG.digitalColorColons);
-        renderNumber(digContainer, toDoz(mec), midMec, cy, scX, scY, CONFIG.digitalColorMecs);
+        renderNumber(digContainer, groups[2], midMec, cy, scX, scY, CONFIG.digitalColorMecs);
         
         // Regular time (12-hour with AM/PM) for the selected zone
         var regText = now.toLocaleTimeString('en-US', Object.assign({ timeZone: tz }, CONFIG.regularTimeOptions));

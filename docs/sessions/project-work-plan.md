@@ -15,7 +15,7 @@ The numbered sessions are declared from `session-plan.md`; each one's task is wh
 | 1 | Author or import the solution plan | no | 2026-11-14 |
 | 2 | Challenge the plan, then break it into numbered sessions | no | 2026-11-14 |
 | 3 | Skeleton — import v3, the pure core and the test suite | no | 2026-11-14 |
-| 4 | The two time systems in the core | — | not declared |
+| 4 | The two time systems in the core | no | 2026-11-14 |
 | 5 | The 24 × 60 × 60 face, the system selector and the other system's reading | — | not declared |
 | 6 | The About page | — | not declared |
 | 7 | The installable app | — | not declared |
@@ -39,3 +39,9 @@ Challenge the cuts in docs/planning/solution-plan.md and record the answers in a
 **Releasable: no.**
 
 Lay the skeleton of the daylight clock: import D:\quadi-dozenal-clock-v3.html byte for byte as web/index.html; move secondsOfDay(date, tz) (new) and the v3 solar functions getSunTimes, getTimezoneOffset, utcMinutesToClockAngle, getSolarAngles, describeArc and spanDegrees, unchanged in behaviour, into a DOM-free classic script web/clock-core.js that exposes ClockCore on globalThis and as module.exports under Node, and make index.html load it first and call those functions through ClockCore while its 48-clock arithmetic stays inline; pin the core with tests/clock-core.test.js (v3's outputs for a fixed date and city, the polar-night null, secondsOfDay at a DST change in America/New_York); and declare the node suite in dabbler.yaml under testing.suites with tests/architecture.test.js enforcing the plan's two rules (no DOM globals in clock-core.js; no network calls under web/ except sw.js filling its own cache).
+
+### Session 4 — The two time systems in the core
+
+**Releasable: no.**
+
+Add the two time systems to the pure core and draw the 48 clock through them. In web/clock-core.js, add a SYSTEMS table for "24x60x60" and "48x48x48" (three divisions, a digit base, and face-label data each) and four functions over it: reading(sec, system) gives three integers each in [0, division); handAngles(sec, system) gives three angles in [0, 360) where the first two hands sweep and the third steps whole units; formatReading(sec, system) gives base-10 HH:MM:SS for 24x60x60 and two dozenal digits per unit (X = 10, E = 11) for the 48 clock; faceLayout(system) gives the tick list (angle, major) and the label list (angle, text, major). An unknown system id or a time outside [0, 86400) throws RangeError. tests/clock-core.test.js gains the cases the plan's rationale names: 06:00:00 in both systems, a third hand that steps whole units, the 24x60x60 face's 24 ticks with majors every 2 hours and labels 0 1 2 3 / 2 4, the 48 clock's 48 ticks and labels exactly as v3 draws them, and the RangeErrors. Then web/index.html's generateTicks, drawAnalogFace and updateClock use faceLayout, handAngles and formatReading for "48x48x48" in place of their inline arithmetic, with the 48 clock's look and readout unchanged.

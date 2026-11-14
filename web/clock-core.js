@@ -22,6 +22,102 @@
     }
 
     // ===========================================
+    // TIME SYSTEMS
+    // ===========================================
+
+    /**
+     * The two divisions of the day: three units each, largest first, and
+     * the base the readout writes them in. Both dials are the whole day.
+     */
+    var SYSTEMS = {
+        '24x60x60': { divisions: [24, 60, 60], base: 10 },
+        '48x48x48': { divisions: [48, 48, 48], base: 12 }
+    };
+
+    var DIGITS = '0123456789XE';
+
+    function systemOf(id) {
+        if (!Object.prototype.hasOwnProperty.call(SYSTEMS, id)) {
+            throw new RangeError('unknown time system: ' + id);
+        }
+        return SYSTEMS[id];
+    }
+
+    function checkSeconds(sec) {
+        if (typeof sec !== 'number' || !(sec >= 0 && sec < 86400)) {
+            throw new RangeError('seconds of day outside [0, 86400): ' + sec);
+        }
+    }
+
+    /** Time of day `sec` in the smallest unit of `s`, as a real number. */
+    function smallestUnits(sec, s) {
+        var d = s.divisions;
+        return sec * (d[0] * d[1] * d[2]) / 86400;
+    }
+
+    /** The three units of `sec` in system `id`: integers, each in [0, division). */
+    function reading(sec, id) {
+        var s = systemOf(id);
+        checkSeconds(sec);
+        var d = s.divisions;
+        var t = Math.floor(smallestUnits(sec, s));
+        return [Math.floor(t / (d[1] * d[2])), Math.floor(t / d[2]) % d[1], t % d[2]];
+    }
+
+    /**
+     * The three hands' angles in degrees clockwise from the top, in [0, 360):
+     * the first two sweep, the third steps one whole unit at a time.
+     */
+    function handAngles(sec, id) {
+        var s = systemOf(id);
+        checkSeconds(sec);
+        var d = s.divisions;
+        var t = smallestUnits(sec, s);
+        var perSecond = d[1] * d[2];
+        return [
+            sec / 86400 * 360,
+            (t % perSecond) / perSecond * 360,
+            (Math.floor(t) % d[2]) / d[2] * 360
+        ];
+    }
+
+    /** The reading as "AA:BB:CC", two digits per unit in the system's base (X = 10, E = 11). */
+    function formatReading(sec, id) {
+        var base = systemOf(id).base;
+        return reading(sec, id).map(function (n) {
+            return DIGITS[Math.floor(n / base)] + DIGITS[n % base];
+        }).join(':');
+    }
+
+    /**
+     * The face: one tick per first unit, major every 2 hours; a label on each
+     * major tick, the quarter-day number (0 1 2 3) at the quarter days and,
+     * between them, the tick's first-unit count within its quarter.
+     * Angles are degrees clockwise from the top.
+     */
+    function faceLayout(id) {
+        var n = systemOf(id).divisions[0];
+        var majorEvery = n / 12;
+        var quarter = n / 4;
+        var ticks = [];
+        var labels = [];
+        for (var i = 0; i < n; i++) {
+            var angle = i * 360 / n;
+            var major = i % majorEvery === 0;
+            ticks.push({ angle: angle, major: major });
+            if (major) {
+                var offset = i % quarter;
+                labels.push({
+                    angle: angle,
+                    text: String(offset === 0 ? i / quarter : offset),
+                    major: offset === 0
+                });
+            }
+        }
+        return { ticks: ticks, labels: labels };
+    }
+
+    // ===========================================
     // SOLAR (moved unchanged from v3)
     // ===========================================
 
@@ -117,6 +213,11 @@
     }
 
     var ClockCore = {
+        SYSTEMS: SYSTEMS,
+        reading: reading,
+        handAngles: handAngles,
+        formatReading: formatReading,
+        faceLayout: faceLayout,
         secondsOfDay: secondsOfDay,
         getSunTimes: getSunTimes,
         getTimezoneOffset: getTimezoneOffset,
