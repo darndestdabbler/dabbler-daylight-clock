@@ -19,7 +19,7 @@ The numbered sessions are declared from `session-plan.md`; each one's task is wh
 | 5 | The 24 × 60 × 60 face, the system selector and the other system's reading | no | 2026-11-14 |
 | 6 | Daylight shown from the start | no | 2026-11-14 |
 | 7 | The About page | no | 2026-11-14 |
-| 8 | The installable app | — | not declared |
+| 8 | The installable app | no | 2026-11-14 |
 | 9 | Packaging | — | not declared |
 | 10 | Release 1.0.0 (release: 1.0.0) | — | not declared |
 
@@ -64,3 +64,9 @@ Show daylight from the moment web/index.html opens. At start-up the page turns d
 **Releasable: no.**
 
 Add an About page, web/about.html: a plain, self-contained page that follows the clock's theme by reading the saved theme from localStorage under the same key ('quadi-dozenal-theme'), inside try/catch, and setting data-theme on the root exactly as index.html does, with the same light/dark colour tokens (Auto follows the phone's setting). It explains what the 48 clock is (dour, zan and mec, each a 48th of the one above, and their lengths: 30 min, 37.5 s, 0.78125 s); why 48 (= 2⁴ × 3) divides evenly so many ways; why we don't use it, with the case for and against; and what the face's markings mean: the gold wedge (today's daylight), the green wedge (the longest day's daylight) and the blue markers (the shortest day's sunrise and sunset). The clock's controls in web/index.html gain a link to about.html, and about.html links back to index.html.
+
+### Session 8 — The installable app
+
+**Releasable: no.**
+
+Make the clock an installable, offline web app that fits a phone. Add web/manifest.webmanifest with relative start_url and scope, and web/icons/ holding an icon.svg source with PNGs rasterized from it at 192 and 512 px plus a maskable 512 px; link the manifest from index.html and about.html. Add web/sw.js, which precaches every site file under a versioned cache name, serves cache-first and deletes older caches on activate; index.html registers it only where navigator.serviceWorker exists and the page is not opened from file:. Add tests/sw.test.js, which reads the precache list out of sw.js and checks that every path in it exists under web/ (and that every file under web/ is in it). Finally lay out index.html and about.html so that at 360 px wide the face, readouts and controls fit without horizontal scrolling.

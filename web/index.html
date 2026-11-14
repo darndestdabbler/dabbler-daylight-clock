@@ -6,6 +6,7 @@
     <title>Dozenal Solar Instrument</title>
     <meta name="color-scheme" content="light dark">
     <meta name="theme-color" content="#e0e0e0" id="meta-theme-color">
+    <link rel="manifest" href="manifest.webmanifest">
     <style>
         /* ===========================================
            THEME TOKENS
@@ -92,6 +93,7 @@
         }
 
         .clock-wrapper {
+            box-sizing: border-box;      /* padding counts inside the 90vmin */
             width: 90vmin;
             max-width: 600px;
             height: auto;
@@ -184,6 +186,23 @@
             display: none;
         }
         #debug-panel.visible { display: block; }
+
+        /* Phone width: a slimmer card, and controls as wide as the card */
+        @media (max-width: 480px) {
+            body { box-sizing: border-box; padding: 12px 0; }
+            .clock-wrapper {
+                padding: 16px;
+                border-radius: 24px;
+            }
+            .controls {
+                box-sizing: border-box;
+                width: 90vw;
+                margin-top: 16px;
+                padding: 10px;
+                gap: 10px;
+            }
+            #debug-panel { box-sizing: border-box; max-width: 90vw; overflow-wrap: anywhere; }
+        }
     </style>
 </head>
 <body>
@@ -796,6 +815,13 @@
         try { saved = localStorage.getItem(DAYLIGHT_KEY); } catch (e) { /* storage unavailable */ }
         if (saved !== 'hidden') toggleSolar();
     })();
+
+    // ===========================================
+    // OFFLINE (the service worker caches the site; it cannot run from file:)
+    // ===========================================
+    if ('serviceWorker' in navigator && location.protocol !== 'file:') {
+        navigator.serviceWorker.register('sw.js').catch(function() { /* no offline cache */ });
+    }
 
 </script>
 

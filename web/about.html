@@ -6,6 +6,7 @@
     <title>About the Dozenal Solar Instrument</title>
     <meta name="color-scheme" content="light dark">
     <meta name="theme-color" content="#e0e0e0" id="meta-theme-color">
+    <link rel="manifest" href="manifest.webmanifest">
     <script>
         // Follow the clock's theme: read the choice index.html saved
         // (Auto, the default, follows the phone's dark-mode setting).
@@ -83,6 +84,13 @@
             margin-right: 0.4em;
         }
         .muted { color: var(--muted); }
+
+        /* Phone width: slimmer side padding, and a table too wide scrolls by itself */
+        @media (max-width: 480px) {
+            body { padding: 16px 8px; }
+            main { padding: 20px 16px; }
+            table { display: block; overflow-x: auto; }
+        }
     </style>
 </head>
 <body>
