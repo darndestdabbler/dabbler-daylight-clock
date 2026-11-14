@@ -53,7 +53,7 @@ clock, without install or offline support.
 
 | Part | Handed over as | Standard command |
 |---|---|---|
-| The web app | **A static site folder** — `web/` as it stands: `index.html`, `about.html`, `clock-core.js`, `manifest.webmanifest`, `sw.js`, `icons/` — copied as-is to any static host (GitHub Pages, Azure Static Web Apps, any web server). No build step. | A zip of `web/` written into `{output}`, e.g. `tar -a -c -f {output}/daylight-clock.zip -C web .` (bsdtar, shipped with Windows and macOS). The packaging session fixes the exact argv and rehearses it with `dabbler packaging --rehearse`. |
+| The web app | **A static site folder** — `web/` as it stands: `index.html`, `about.html`, `clock-core.js`, `manifest.webmanifest`, `sw.js`, `icons/` — copied as-is to any static host (GitHub Pages, Azure Static Web Apps, any web server). No build step. | A gzipped tarball of `web/` written into `{output}`: `tar -czf {output}/daylight-clock.tar.gz -C web .` — an invocation both GNU tar (Git Bash) and bsdtar (Windows, macOS) accept, unlike `tar -a` zip, which only bsdtar writes. The packaging session fixes the exact argv and rehearses it with `dabbler packaging --rehearse`. |
 
 There is no database, so there is no migration script. The easiest form to
 test is the folder itself, served on `localhost` by any static server.
@@ -68,7 +68,8 @@ browser:
 ### `web/clock-core.js` — time systems and solar calculation (pure)
 
 - **Responsible for:** the two time systems and everything computable
-  without a page: the reading of a time of day in a system, hand angles,
+  without a page: the wall-clock seconds of day in a timezone, the
+  reading of a time of day in a system, hand angles,
   readout strings, the face layout (ticks and labels) for a system, and the
   sunrise/sunset → dial-angle calculations moved over from v3
   (`getSunTimes`, `getTimezoneOffset`, `getSolarAngles`, `describeArc`,
@@ -77,7 +78,10 @@ browser:
   - *In:* a system id (`"24x60x60"` or `"48x48x48"`), seconds since local
     midnight in `[0, 86400)`, and for the solar functions a date, a
     latitude/longitude and an IANA timezone.
-  - *Out:* `reading(sec, system)` gives three integers, each in
+  - *Out:* `secondsOfDay(date, tz)` gives the wall-clock seconds since
+    midnight in `tz` at the instant `date`, in `[0, 86400)` (on a DST
+    change day it follows the wall clock, as v3 does);
+    `reading(sec, system)` gives three integers, each in
     `[0, division)`; `handAngles(sec, system)` gives three angles in
     `[0, 360)` (the first and second hands sweep, the third steps one unit
     at a time, as in v3); `formatReading` gives `HH:MM:SS` in base 10 for
@@ -163,3 +167,98 @@ sessions.
    - The packaging session (the `packaging:` block that zips `web/`), then
      the first release, version **1.0.0** proposed, for the person to
      approve with the session list.
+
+## Rationale (session 002 challenge)
+
+Session 002 challenged each cut before breaking the plan into sessions.
+
+### Should each module exist?
+
+- **`web/clock-core.js` — yes.** Everything that can be silently wrong is
+  arithmetic: the divisions, the dozenal digits, the hand angles, sunrise
+  and sunset. That code needs a test that runs without a browser, and only
+  a file that touches no DOM can have one. It is one file and not a package,
+  because only the page uses it.
+- **The page (`index.html`, `about.html`, `manifest.webmanifest`, `sw.js`)
+  — yes, as one module.** These files are deployed together and none is
+  used without the others. Splitting the service worker or the About page
+  into modules of their own would add boundaries without adding any
+  promise to test.
+- **No third module.** A "systems" module apart from the core would split
+  one table across two files. Both systems belong in one `SYSTEMS` table
+  inside the core.
+
+### Can a test prove each contract?
+
+- **Core — yes, in `tests/clock-core.test.js`.** Each promise has an
+  exact expected value. For example, 06:00:00 is the reading
+  `[6, 0, 0]`, formatted `06:00:00`, in 24 × 60 × 60, and the reading
+  `[12, 0, 0]`, formatted `10:00:00` (dour 12 in dozenal), in the 48 clock. Each third hand
+  steps whole units. `faceLayout("24x60x60")` has 24 ticks, a major every
+  2 hours, labels 0 1 2 3 at the quarter days and 2 and 4 between them.
+  An unknown system id or `86400` throws `RangeError`. A polar date returns
+  `null`. The v3 solar output for a fixed date and city must be reproduced
+  exactly.
+- **The page's "no server of its own" rule, and the core's "no DOM" rule —
+  yes, in `tests/architecture.test.js`.** It reads the files as text and
+  checks two things. First, `clock-core.js` names no `document`, `window`,
+  `localStorage` or `navigator`. Second, no file under `web/` calls
+  `fetch`, `XMLHttpRequest`, `WebSocket` or `EventSource`, except `sw.js`,
+  which may `fetch` only to fill its own cache. This is the one
+  architecture rule the plan requires, so it stands in for "only the API
+  tier reaches the database", which does not apply here.
+- **The page's rendering — no, and not claimed.** The page is checked by
+  looking at it. Its one mechanical promise is that every file `sw.js`
+  precaches exists under `web/`. The installable-app session tests that.
+- **Degrades, never breaks** (storage, geolocation or service worker
+  unavailable) can't be proved without a browser either. It stays a
+  reviewed promise: every `localStorage` access is in `try/catch`, as v3
+  already does.
+
+### Does the dependency direction hide the decisions most likely to change?
+
+The page depends on the core, and the core depends on nothing. These are
+the decisions most likely to change:
+
+- **The face labels and tick spacing:** data in `faceLayout`, in the core.
+- **Whether a hand steps or sweeps:** `handAngles`, in the core.
+- **Which systems exist:** the `SYSTEMS` table, in the core.
+- **The solar algorithm:** in the core.
+
+A test reaches all four. Glyph shapes, sizes, colours and layout belong to
+the page, which is correct, because they change by looking at them.
+
+**One decision was hidden, and this challenge moves it.** v3 turns "now in
+timezone X" into a time of day inside the page, with
+`new Date(now.toLocaleString(...))`, and nothing tests it. That conversion
+is where daylight-saving and timezone bugs live. The core now owns it, as
+`secondsOfDay(date, tz)`, and `Intl` works in Node too. The tests pin a
+DST-change instant in `America/New_York`.
+
+### Deferred cuts, decided
+
+- **Native Wear OS watch face — stays deferred.** The brief puts it out of
+  scope "for now". It needs a different toolchain, and nothing here would
+  consume it yet. When it comes, the core's contract and tests are its
+  specification.
+- **User-defined divisions — stays out of scope.** That was the person's
+  choice. The `SYSTEMS` table leaves room for them, but no general face
+  generator is built.
+- **Separate projects or packages per concern — closed: no.** There is
+  only one consumer. A Wear OS face would reimplement the core in Kotlin
+  rather than import it, so packaging the core would not help that either.
+- **A build step, bundler or framework — closed: no.** Plain files run
+  from disk and from any static host, and with no build there is nothing
+  to keep in sync.
+
+### Handoff command, corrected
+
+The plan first named `tar -a -c -f …zip`. Only bsdtar (Windows'
+`System32\tar.exe`, macOS) writes a zip that way. GNU tar is the `tar` in
+Git Bash, and it can't, so the command would depend on which `tar` comes
+first on PATH. `tar -czf {output}/daylight-clock.tar.gz -C web .` works the
+same under both. The packaging session uses it.
+
+**Open for the person: where a release goes.** A release pushes the
+artifact to a feed. Here that is a folder on disk, which needs no
+credential. The packaging session asks the person which folder to use.
