@@ -23,18 +23,16 @@ testing:
 # Step (f) of the lifecycle: pack, then push to a feed. A session that
 # declared itself releasable publishes through these -- both argv, never
 # shell strings, and `push` naming the credential rather than holding it.
-# This repository declares none, and that is the declaration: it publishes
-# to no feed today. A feed that is a folder on disk -- a drive path, a UNC
-# path or file:// -- takes no credential: leave `secret` out, and the push
-# runs without one. `dabbler packaging --dry-run` rehearses the block and
-# exits 0 when it loads, in a session that may not publish too;
+# The pack tars web/ into one archive; the feed is a folder on disk, so the
+# push copies the archive there with node and takes no credential (no
+# `secret`). `dabbler packaging --dry-run` rehearses the block and exits 0
+# when it loads, in a session that may not publish too;
 # `dabbler packaging --rehearse` runs the pack and pushes nothing.
-#
-#   packaging:
-#     pack:
-#       argv: ["dotnet", "pack", "-c", "Release", "-o", "{output}"]
-#     push:
-#       argv: ["dotnet", "nuget", "push", "{artifact}",
-#              "--source", "{feed}", "--api-key", "{secret}"]
-#       feed: https://pkgs.dev.azure.com/<org>/_packaging/<feed>/nuget/v3/index.json
-#       secret: DABBLER_FEED_PAT
+packaging:
+  pack:
+    argv: ["tar", "-czf", "{output}/daylight-clock.tar.gz", "-C", "web", "."]
+  push:
+    argv: ["node", "-e",
+           "const fs=require('fs'),p=require('path');fs.mkdirSync(process.argv[2],{recursive:true});fs.copyFileSync(process.argv[1],p.join(process.argv[2],p.basename(process.argv[1])))",
+           "{artifact}", "{feed}"]
+    feed: 'D:\Releases\daylight-clock'

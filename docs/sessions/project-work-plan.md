@@ -20,7 +20,7 @@ The numbered sessions are declared from `session-plan.md`; each one's task is wh
 | 6 | Daylight shown from the start | no | 2026-11-14 |
 | 7 | The About page | no | 2026-11-14 |
 | 8 | The installable app | no | 2026-11-14 |
-| 9 | Packaging | — | not declared |
+| 9 | Packaging | no | 2026-11-14 |
 | 10 | Release 1.0.0 (release: 1.0.0) | — | not declared |
 
 ### Session 1 — Author or import the solution plan
@@ -70,3 +70,9 @@ Add an About page, web/about.html: a plain, self-contained page that follows the
 **Releasable: no.**
 
 Make the clock an installable, offline web app that fits a phone. Add web/manifest.webmanifest with relative start_url and scope, and web/icons/ holding an icon.svg source with PNGs rasterized from it at 192 and 512 px plus a maskable 512 px; link the manifest from index.html and about.html. Add web/sw.js, which precaches every site file under a versioned cache name, serves cache-first and deletes older caches on activate; index.html registers it only where navigator.serviceWorker exists and the page is not opened from file:. Add tests/sw.test.js, which reads the precache list out of sw.js and checks that every path in it exists under web/ (and that every file under web/ is in it). Finally lay out index.html and about.html so that at 360 px wide the face, readouts and controls fit without horizontal scrolling.
+
+### Session 9 — Packaging
+
+**Releasable: no.**
+
+Declare how this repository is packaged and published by adding a `packaging:` block to dabbler.yaml, and nothing else. The pack step tars the web/ folder into {output}/daylight-clock.tar.gz with `tar -czf ... -C web .`; the push step copies {artifact} into the feed folder D:\Releases\daylight-clock (the folder the person chose) with `node -e` and fs.copyFileSync, run without a shell and with no secret. The block is proven by `dabbler packaging --rehearse`.
