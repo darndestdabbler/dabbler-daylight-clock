@@ -179,7 +179,20 @@ starting with the skeleton session.
    readout's own glyphs, so the 48 clock's X and E appear as the turned 2
    and 3.
 
-### Session 6: The About page
+### Session 6: Daylight shown from the start
+
+1. Register.
+2. In `web/index.html`, show the daylight wedges, the sun and the
+   shortest-day markers as soon as the page opens, through the same path
+   the sun button takes today: with Local Time selected the browser asks
+   for location at once, and where location is refused or unavailable the
+   page falls back to the timezone's city, as the button already does.
+3. The button stays, as "Hide Daylight Time" while daylight shows. Hiding
+   is remembered in `localStorage` inside `try/catch`, as the theme and
+   the system are, and a later visit opens with daylight hidden until it
+   is shown again. With nothing saved, daylight shows.
+
+### Session 7: The About page
 
 1. Register.
 2. Write `web/about.html`. It follows the clock's theme by reading the
@@ -194,7 +207,7 @@ starting with the skeleton session.
 3. Link the About page from the clock's controls in `web/index.html`, and
    link back to the clock from `web/about.html`.
 
-### Session 7: The installable app
+### Session 8: The installable app
 
 1. Register.
 2. Add `web/manifest.webmanifest` and `web/icons/`: an `icon.svg` source
@@ -210,7 +223,7 @@ starting with the skeleton session.
    360 px wide, the face, readouts and controls fit without horizontal
    scrolling.
 
-### Session 8: Packaging
+### Session 9: Packaging
 
 1. Register.
 2. Ask the person which folder on disk releases go to. Then write the
@@ -222,4 +235,4 @@ starting with the skeleton session.
      `secret`.
    The step's check is `dabbler packaging --rehearse`.
 
-### Session 9: Release 1.0.0 (release: 1.0.0)
+### Session 10: Release 1.0.0 (release: 1.0.0)
