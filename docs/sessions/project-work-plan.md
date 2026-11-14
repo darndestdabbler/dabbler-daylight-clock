@@ -18,7 +18,7 @@ The numbered sessions are declared from `session-plan.md`; each one's task is wh
 | 4 | The two time systems in the core | no | 2026-11-14 |
 | 5 | The 24 × 60 × 60 face, the system selector and the other system's reading | no | 2026-11-14 |
 | 6 | Daylight shown from the start | no | 2026-11-14 |
-| 7 | The About page | — | not declared |
+| 7 | The About page | no | 2026-11-14 |
 | 8 | The installable app | — | not declared |
 | 9 | Packaging | — | not declared |
 | 10 | Release 1.0.0 (release: 1.0.0) | — | not declared |
@@ -58,3 +58,9 @@ Put both time systems on the page. web/index.html gains a system selector in its
 **Releasable: no.**
 
 Show daylight from the moment web/index.html opens. At start-up the page turns daylight on through the same path the sun button takes today (toggleSolar): with Local Time selected the browser is asked for location at once, and where location is refused or unavailable the page falls back to the timezone's city exactly as the button already does. The button stays and reads "Hide Daylight Time" while daylight shows. Hiding is remembered under its own localStorage key inside try/catch, as the theme and the system are: a click that hides daylight saves that, a click that shows it again clears it, and a later visit opens with daylight hidden only when hiding was the last choice saved; with nothing saved (or storage unavailable), daylight shows.
+
+### Session 7 — The About page
+
+**Releasable: no.**
+
+Add an About page, web/about.html: a plain, self-contained page that follows the clock's theme by reading the saved theme from localStorage under the same key ('quadi-dozenal-theme'), inside try/catch, and setting data-theme on the root exactly as index.html does, with the same light/dark colour tokens (Auto follows the phone's setting). It explains what the 48 clock is (dour, zan and mec, each a 48th of the one above, and their lengths: 30 min, 37.5 s, 0.78125 s); why 48 (= 2⁴ × 3) divides evenly so many ways; why we don't use it, with the case for and against; and what the face's markings mean: the gold wedge (today's daylight), the green wedge (the longest day's daylight) and the blue markers (the shortest day's sunrise and sunset). The clock's controls in web/index.html gain a link to about.html, and about.html links back to index.html.

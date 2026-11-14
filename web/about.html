@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About the Dozenal Solar Instrument</title>
+    <meta name="color-scheme" content="light dark">
+    <meta name="theme-color" content="#e0e0e0" id="meta-theme-color">
+    <script>
+        // Follow the clock's theme: read the choice index.html saved
+        // (Auto, the default, follows the phone's dark-mode setting).
+        (function () {
+            var saved = 'auto';
+            try { saved = localStorage.getItem('quadi-dozenal-theme') || 'auto'; } catch (e) { /* storage unavailable */ }
+            if (saved === 'light' || saved === 'dark') document.documentElement.setAttribute('data-theme', saved);
+        })();
+    </script>
+    <style>
+        :root {
+            --page-bg: #e0e0e0;
+            --card-bg: #ffffff;
+            --card-shadow: rgba(0,0,0,0.15);
+            --text: #333333;
+            --muted: #666666;
+            --daylight-today: #fcc000;
+            --daylight-longest: #009E73;
+            --shortest-marker: #0072B2;
+            --dour: #cc79a7;
+            --zan: #56b3e9;
+            --mec: #009e74;
+        }
+        :root[data-theme="dark"] {
+            --page-bg: #000000;
+            --card-bg: #121212;
+            --card-shadow: rgba(0,0,0,0.6);
+            --text: #dddddd;
+            --muted: #a0a0a0;
+            --daylight-today: #d9a600;
+            --daylight-longest: #00876a;
+            --shortest-marker: #56B4E9;
+        }
+        @media (prefers-color-scheme: dark) {
+            :root:not([data-theme="light"]) {
+            --page-bg: #000000;
+            --card-bg: #121212;
+            --card-shadow: rgba(0,0,0,0.6);
+            --text: #dddddd;
+            --muted: #a0a0a0;
+            --daylight-today: #d9a600;
+            --daylight-longest: #00876a;
+            --shortest-marker: #56B4E9;
+            }
+        }
+
+        body {
+            background-color: var(--page-bg);
+            color: var(--text);
+            margin: 0;
+            padding: 24px 16px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+        }
+        main {
+            max-width: 680px;
+            margin: 0 auto;
+            background: var(--card-bg);
+            padding: 24px 32px;
+            border-radius: 24px;
+            box-shadow: 0 20px 50px var(--card-shadow);
+        }
+        h1 { margin-top: 0; font-size: 1.6rem; }
+        h2 { font-size: 1.2rem; margin-top: 2em; }
+        a { color: inherit; }
+        .back { display: inline-block; margin-bottom: 1em; color: var(--muted); }
+        table { border-collapse: collapse; margin: 1em 0; }
+        th, td { text-align: left; padding: 4px 16px 4px 0; }
+        .swatch {
+            display: inline-block;
+            width: 0.9em;
+            height: 0.9em;
+            border-radius: 2px;
+            vertical-align: -0.1em;
+            margin-right: 0.4em;
+        }
+        .muted { color: var(--muted); }
+    </style>
+</head>
+<body>
+<main>
+    <a class="back" href="index.html">&larr; Back to the clock</a>
+
+    <h1>About the clock</h1>
+
+    <p>This clock tells the time of day two ways: the familiar
+    24&nbsp;×&nbsp;60&nbsp;×&nbsp;60 (hours, minutes, seconds), and the
+    48&nbsp;×&nbsp;48&nbsp;×&nbsp;48 clock described here. Either way, the
+    short hand goes round once a day, midnight at the top and noon at the
+    bottom, so the face can show where the daylight falls.</p>
+
+    <h2>The 48 clock</h2>
+
+    <p>The day is divided by 48, and each part by 48 again, three times
+    over:</p>
+
+    <table>
+        <tr><th><span class="swatch" style="background: var(--dour)"></span>dour</th><td>1/48 of a day</td><td>30 min</td></tr>
+        <tr><th><span class="swatch" style="background: var(--zan)"></span>zan</th><td>1/48 of a dour</td><td>37.5 s</td></tr>
+        <tr><th><span class="swatch" style="background: var(--mec)"></span>mec</th><td>1/48 of a zan</td><td>0.78125 s</td></tr>
+    </table>
+
+    <p>A day is 48 dours, 2,304 zans or 110,592 mecs. The readout writes
+    each unit with two dozenal (base-12) digits, where X is ten and E is
+    eleven, so each one runs from 00 to 3E (forty-seven). Noon is
+    20:00:00.</p>
+
+    <h2>Why 48?</h2>
+
+    <p>48 = 2⁴ × 3, and that makes it easy to cut up. It halves cleanly four
+    times (48, 24, 12, 6, 3), and it splits into thirds as well, so half,
+    a third, a quarter, a sixth, an eighth, a twelfth, a sixteenth and a
+    twenty-fourth of it are all whole numbers. Ten numbers divide 48
+    evenly: 1, 2, 3, 4, 6, 8, 12, 16, 24 and 48.</p>
+
+    <p>It also uses the same 48 at every level, where our clock switches
+    from 24 to 60, so the hands and the readout all work the same way. And
+    a dour is exactly half an hour, so it lines up with the clock we
+    already have at every half hour, and with nearly every time zone.</p>
+
+    <h2>So why don't we use it?</h2>
+
+    <p><strong>The case for:</strong> one rule all the way down instead of
+    two; a day that halves, quarters and thirds into whole dours (a quarter
+    of the day is 12 dours, a third is 16); a mec close enough to a second
+    to count by; and a dour that converts to half-hours without
+    arithmetic.</p>
+
+    <p><strong>The case against:</strong> the world already runs on
+    24 × 60 × 60. Every clock, timetable, contract and law is written in
+    hours and minutes, and the second is the unit science measures
+    everything else by, so a new day would have to be converted at every
+    border with the old one. A zan of 37.5 seconds and a mec of 0.78125
+    seconds never come out even against the second. 48 has no fifths or
+    tenths, which 60 has, and reading the time in dozenal digits is a
+    second new habit on top of the first. France tried decimal time in
+    1793 and gave it up within two years; habit is the strongest argument
+    of all.</p>
+
+    <p class="muted">So the 48 clock is offered here as something to look
+    at the day through, not a replacement for the one on the wall.</p>
+
+    <h2>What the face shows</h2>
+
+    <p><span class="swatch" style="background: var(--daylight-today)"></span><strong>The
+    gold wedge</strong> is today's daylight: it runs from sunrise to
+    sunset where you are.</p>
+
+    <p><span class="swatch" style="background: var(--daylight-longest)"></span><strong>The
+    green wedge</strong>, behind the gold, is the daylight of the
+    longest day of the year, so the green showing past the gold is the daylight
+    today is still short of the most there is.</p>
+
+    <p><span class="swatch" style="background: var(--shortest-marker)"></span><strong>The
+    blue markers</strong> are lines across the rim, with a pointer outside
+    the dial, at sunrise and sunset on the shortest day of the year: the
+    least daylight there ever is.</p>
+
+    <p>Black around the rim is the part of the day that is never in
+    daylight on any day of the year.</p>
+
+    <a class="back" href="index.html">&larr; Back to the clock</a>
+</main>
+<script>
+    // Keep the phone's status-bar colour matched to the page
+    (function () {
+        var bg = getComputedStyle(document.documentElement).getPropertyValue('--page-bg').trim();
+        document.getElementById('meta-theme-color').setAttribute('content', bg || '#e0e0e0');
+    })();
+</script>
+</body>
+</html>

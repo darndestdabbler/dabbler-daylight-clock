@@ -138,7 +138,7 @@
             justify-content: center;
         }
 
-        select, button {
+        select, button, a#link-about {
             padding: 8px 12px;
             border-radius: 6px;
             border: 1px solid var(--control-border);
@@ -160,6 +160,10 @@
             background-color: #fcc000;
             border-color: #e6b000;
             color: #333;
+        }
+
+        a#link-about {
+            text-decoration: none;
         }
 
         #date-override {
@@ -290,6 +294,7 @@
         <option value="light">&#9728; Light</option>
         <option value="dark">&#9790; Dark</option>
     </select>
+    <a id="link-about" href="about.html">About</a>
 </div>
 
 <div id="debug-panel"></div>
