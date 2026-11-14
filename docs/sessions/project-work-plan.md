@@ -16,7 +16,7 @@ The numbered sessions are declared from `session-plan.md`; each one's task is wh
 | 2 | Challenge the plan, then break it into numbered sessions | no | 2026-11-14 |
 | 3 | Skeleton — import v3, the pure core and the test suite | no | 2026-11-14 |
 | 4 | The two time systems in the core | no | 2026-11-14 |
-| 5 | The 24 × 60 × 60 face, the system selector and the other system's reading | — | not declared |
+| 5 | The 24 × 60 × 60 face, the system selector and the other system's reading | no | 2026-11-14 |
 | 6 | The About page | — | not declared |
 | 7 | The installable app | — | not declared |
 | 8 | Packaging | — | not declared |
@@ -45,3 +45,9 @@ Lay the skeleton of the daylight clock: import D:\quadi-dozenal-clock-v3.html by
 **Releasable: no.**
 
 Add the two time systems to the pure core and draw the 48 clock through them. In web/clock-core.js, add a SYSTEMS table for "24x60x60" and "48x48x48" (three divisions, a digit base, and face-label data each) and four functions over it: reading(sec, system) gives three integers each in [0, division); handAngles(sec, system) gives three angles in [0, 360) where the first two hands sweep and the third steps whole units; formatReading(sec, system) gives base-10 HH:MM:SS for 24x60x60 and two dozenal digits per unit (X = 10, E = 11) for the 48 clock; faceLayout(system) gives the tick list (angle, major) and the label list (angle, text, major). An unknown system id or a time outside [0, 86400) throws RangeError. tests/clock-core.test.js gains the cases the plan's rationale names: 06:00:00 in both systems, a third hand that steps whole units, the 24x60x60 face's 24 ticks with majors every 2 hours and labels 0 1 2 3 / 2 4, the 48 clock's 48 ticks and labels exactly as v3 draws them, and the RangeErrors. Then web/index.html's generateTicks, drawAnalogFace and updateClock use faceLayout, handAngles and formatReading for "48x48x48" in place of their inline arithmetic, with the 48 clock's look and readout unchanged.
+
+### Session 5 — The 24 × 60 × 60 face, the system selector and the other system's reading
+
+**Releasable: no.**
+
+Put both time systems on the page. web/index.html gains a system selector in its controls (24 x 60 x 60, the default, and the 48 clock), remembered in localStorage inside try/catch the way the theme is; choosing a system clears and redraws the mask ticks and the face labels from faceLayout, and from then on updateClock turns the hands by handAngles and writes the digital readout by formatReading of the chosen system (base-10 24-hour HH:MM:SS, or the 48 clock's dozenal). The Z subpath is removed from the zan hand's path so no hand carries a Z in either system. The italic 12-hour civil line under the readout is replaced by the other system's reading, formatReading of the system not shown, drawn with the readout's own glyphs through renderNumber so the 48 clock's X and E appear as the turned 2 and 3.
