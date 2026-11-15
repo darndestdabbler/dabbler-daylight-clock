@@ -236,3 +236,18 @@ starting with the skeleton session.
    The step's check is `dabbler packaging --rehearse`.
 
 ### Session 10: Release 1.0.0 (release: 1.0.0)
+
+### Session 11: Host on GitHub Pages at clock.darndestdabbler.org
+
+1. Register.
+2. Add `.github/workflows/pages.yml`, and nothing else: run by hand
+   (`workflow_dispatch`) only, it uploads `web/` as it stands on the trunk
+   with `actions/upload-pages-artifact` and deploys it with
+   `actions/deploy-pages`. It has no build step and touches no file under
+   `web/`. The step's check proves the workflow file exists and names
+   `web` as the uploaded path.
+3. The person does the rest, outside the repository: a DNS `CNAME`
+   record from `clock` to `darndestdabbler.github.io`; in the repository's
+   Pages settings, source *GitHub Actions* and custom domain
+   `clock.darndestdabbler.org` with HTTPS enforced; then a run of the
+   workflow after each release.
