@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Session 009 transcript</title>
+<style>
+:root {
+  --page: #ffffff;
+  --ink: #1f1f1f;
+  --faint: #e4e4e4;
+  --panel: #f6f6f6;
+  --tone-milestone: #2a5db0;
+  --tone-good: #256029;
+  --tone-warn: #8a6100;
+  --tone-bad: #a31515;
+  --tone-muted: #6b6b6b;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --page: #1e1e1e;
+    --ink: #d4d4d4;
+    --faint: #3a3a3a;
+    --panel: #252526;
+  --tone-milestone: #3874db;
+  --tone-good: #54a33b;
+  --tone-warn: #b79427;
+  --tone-bad: #f14c4c;
+  --tone-muted: #8c8c8c;
+  }
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  padding: 24px 16px 64px;
+  background: var(--page);
+  color: var(--ink);
+  font: 14px/1.6 ui-sans-serif, system-ui, "Segoe UI", sans-serif;
+}
+main { max-width: 68rem; margin: 0 auto; }
+h1 { font-size: 1.4rem; margin: 0 0 .25rem; }
+h2 { font-size: 1.05rem; margin: 2.5rem 0 .75rem; border-bottom: 1px solid var(--faint); padding-bottom: .3rem; }
+.stamp { color: var(--tone-muted); font-size: .85rem; margin: 0 0 .25rem; }
+.mono, pre, code { font-family: ui-monospace, "Cascadia Mono", Consolas, monospace; }
+.lines { font-family: ui-monospace, "Cascadia Mono", Consolas, monospace; font-size: 13px; }
+.line { white-space: pre-wrap; word-break: break-word; padding-left: 10.5ch; text-indent: -10.5ch; }
+.at { color: var(--tone-muted); }
+table { border-collapse: collapse; width: 100%; font-size: 13px; }
+th, td { text-align: left; padding: .35rem .6rem; border-bottom: 1px solid var(--faint); vertical-align: top; }
+th { color: var(--tone-muted); font-weight: 600; }
+details { margin: .5rem 0; }
+summary { cursor: pointer; }
+td details { margin: 0; }
+tr:has(details:not([open])) + tr.findings { display: none; }
+tr.findings > td { padding: 0 0 .5rem 1.5rem; }
+pre { background: var(--panel); padding: .75rem; overflow-x: auto; white-space: pre-wrap; word-break: break-word; font-size: 12.5px; }
+.stop, .cancelled { border-left: 3px solid var(--tone-bad); background: var(--panel); padding: .6rem .9rem; }
+.milestone { color: var(--tone-milestone); }
+.good { color: var(--tone-good); }
+.warn { color: var(--tone-warn); }
+.bad { color: var(--tone-bad); }
+.muted { color: var(--tone-muted); }
+</style>
+</head>
+<body>
+<main>
+<h1>Session 009 transcript</h1>
+<p class="stamp">Rendered 2026-11-14T14:53:55.343Z by dabbler-ai-router 3.33.0 at 5fd4c74db8744b11f55ac641e4970bf99d223d86.</p>
+<p class="stamp">Engine cli, last phase <span class="milestone">log</span>, started 2026-11-14T09:49:29.054-05:00.</p>
+<h2>Session Plan</h2>
+<h3>Session 9: Packaging</h3>
+<ol><li>Register.</li><li>Ask the person which folder on disk releases go to. Then write the <code>packaging:</code> block in <code>dabbler.yaml</code>, and nothing else:</li></ol>
+<ul><li><code>pack.argv</code> is <code>[&quot;tar&quot;, &quot;-czf&quot;, &quot;{output}/daylight-clock.tar.gz&quot;, &quot;-C&quot;, &quot;web&quot;, &quot;.&quot;]</code>;</li><li><code>push</code> copies <code>{artifact}</code> into that folder, its <code>feed</code>, without a shell (for example <code>node -e</code> with <code>fs.copyFileSync</code>), and has no <code>secret</code>. The step's check is <code>dabbler packaging --rehearse</code>.</li></ul>
+<h2>Work Plan</h2>
+<p>Declare how this repository is packaged and published by adding a <code>packaging:</code> block to dabbler.yaml, and nothing else. The pack step tars the web/ folder into {output}/daylight-clock.tar.gz with <code>tar -czf ... -C web .</code>; the push step copies {artifact} into the feed folder D:\Releases\daylight-clock (the folder the person chose) with <code>node -e</code> and fs.copyFileSync, run without a shell and with no secret. The block is proven by <code>dabbler packaging --rehearse</code>.</p>
+<p>Landed <a href="https://github.com/darndestdabbler/dabbler-daylight-clock/commit/083dd752f38d1b19f43ea811bf470ec66a31e607"><code>083dd752f38d1b19f43ea811bf470ec66a31e607</code></a>.</p>
+<table>
+<tr><th>Step</th><th>Ask</th><th>Files</th><th>Checks</th><th>Accepted</th></tr>
+<tr><td>Packaging block</td><td><p>Add the <code>packaging:</code> block to dabbler.yaml: pack.argv is [&quot;tar&quot;, &quot;-czf&quot;, &quot;{output}/daylight-clock.tar.gz&quot;, &quot;-C&quot;, &quot;web&quot;, &quot;.&quot;]; push.argv runs node -e with a script that creates the feed folder if missing and copies {artifact} into it with fs.copyFileSync, passing {artifact} and {feed} as arguments; push.feed is D:\Releases\daylight-clock; no secret. Update the comment above it so it no longer says the repository declares no packaging.</p></td><td><span class="mono">dabbler.yaml</span></td><td><code>dabbler packaging --rehearse</code></td><td>yes</td></tr>
+</table>
+<p>Non-goals:</p>
+<ul><li>No release is cut or published: that is a release session of its own, not this packaging session.</li><li>No change to the app under web/, its tests, or any file other than dabbler.yaml.</li></ul>
+<h2>What the framework said</h2>
+<div class="lines"><div class="line"><span class="at">[14:49:29]</span> <span class="muted">run-started</span> session=009 mode=pull</div>
+<div class="line"><span class="at">[14:49:29]</span> <span class="muted">instruction-issued</span> seq=1 kind=step step=plan</div>
+<div class="line"><span class="at">[14:50:15]</span> <span class="muted">run-resumed</span> session=009 phase=<span class="milestone">plan</span> mode=pull</div>
+<div class="line"><span class="at">[14:50:15]</span> <span class="muted">plan-accepted</span> steps=[&quot;packaging-block&quot;] non_goals=2</div>
+<div class="line"><span class="at">[14:50:20]</span> <span class="milestone">phase</span> phase=<span class="milestone">work</span></div>
+<div class="line"><span class="at">[14:50:20]</span> <span class="muted">instruction-issued</span> seq=2 kind=step step=packaging-block</div>
+<div class="line"><span class="at">[14:50:24]</span> <span class="muted">run-resumed</span> session=009 phase=<span class="milestone">work</span> mode=pull</div>
+<div class="line"><span class="at">[14:50:24]</span> <span class="muted">instruction-outstanding</span> seq=2 step=packaging-block</div>
+<div class="line"><span class="at">[14:50:29]</span> <span class="muted">run-resumed</span> session=009 phase=<span class="milestone">work</span> mode=pull</div>
+<div class="line"><span class="at">[14:50:29]</span> <span class="muted">instruction-outstanding</span> seq=2 step=packaging-block</div>
+<div class="line"><span class="at">[14:51:27]</span> <span class="muted">run-resumed</span> session=009 phase=<span class="milestone">work</span> mode=pull</div>
+<div class="line"><span class="at">[14:51:39]</span> <span class="muted">run-resumed</span> session=009 phase=<span class="milestone">work</span> mode=pull</div>
+<div class="line"><span class="at">[14:51:45]</span> <span class="muted">check-passed</span> step=packaging-block argv=[&quot;dabbler&quot;,&quot;packaging&quot;,&quot;--rehearse&quot;]</div>
+<div class="line"><span class="at">[14:51:56]</span> <span class="muted">check-passed</span> step=packaging-block argv=[&quot;dabbler&quot;,&quot;packaging&quot;,&quot;--rehearse&quot;]</div>
+<div class="line"><span class="at">[14:52:00]</span> <span class="muted">report-accepted</span> seq=2 step=packaging-block files=[&quot;dabbler.yaml&quot;] notes=Added packaging block: tar pack of web/ and a shell-free node copy push to D:\Releases\daylight-clock with no secret; rehearsal passes.</div>
+<div class="line"><span class="at">[14:52:00]</span> <span class="milestone">phase</span> phase=<span class="milestone">preverify</span></div>
+<div class="line"><span class="at">[14:52:00]</span> <span class="milestone">phase</span> phase=<span class="milestone">verify</span></div>
+<div class="line"><span class="at">[14:52:10]</span> <span class="muted">run-resumed</span> session=009 phase=<span class="milestone">verify</span> mode=pull</div>
+<div class="line"><span class="at">[14:52:13]</span> <span class="muted">job-ended</span> name=verification pid=39204 reason=another driver holds the lease (epoch 7; this process took 6). A stale attempt does not advance the run; its record ends here.</div>
+<div class="line"><span class="at">[14:52:18]</span> <span class="muted">job-started</span> name=verification pid=2444 log=.dabbler/runs/s9/driver/jobs/verification.log</div>
+<div class="line"><span class="at">[14:52:56]</span> <span class="muted">job-finished</span> name=verification exit=<span class="good">0</span> log=.dabbler/runs/s9/driver/jobs/verification.log</div>
+<div class="line"><span class="at">[14:52:56]</span> <span class="muted">verification-passed</span></div>
+<div class="line"><span class="at">[14:52:56]</span> <span class="milestone">phase</span> phase=<span class="milestone">run-of-record</span></div>
+<div class="line"><span class="at">[14:53:00]</span> <span class="muted">run-of-record</span> suite=node stage=final-full why=node declares no select command=node --test --test-timeout=60000 &quot;tests/**/*.test.js&quot;</div>
+<div class="line"><span class="at">[14:53:01]</span> <span class="muted">job-started</span> name=run of record: node pid=56796 log=.dabbler/runs/s9/driver/jobs/run-of-record-node.log</div>
+<div class="line"><span class="at">[14:53:11]</span> <span class="muted">job-finished</span> name=run of record: node exit=<span class="good">0</span> log=.dabbler/runs/s9/driver/jobs/run-of-record-node.log</div>
+<div class="line"><span class="at">[14:53:11]</span> <span class="milestone">phase</span> phase=<span class="milestone">land</span></div>
+<div class="line"><span class="at">[14:53:28]</span> <span class="muted">landed</span> commit=083dd752f38d1b19f43ea811bf470ec66a31e607</div>
+<div class="line"><span class="at">[14:53:28]</span> <span class="milestone">phase</span> phase=<span class="milestone">publish</span></div>
+<div class="line"><span class="at">[14:53:29]</span> <span class="muted">publish-skipped</span> reason=an ordinary session never publishes</div>
+<div class="line"><span class="at">[14:53:29]</span> <span class="milestone">phase</span> phase=<span class="milestone">close</span></div>
+<div class="line"><span class="at">[14:53:31]</span> <span class="muted">job-started</span> name=close pid=42132 log=.dabbler/runs/s9/driver/jobs/close.log</div>
+<div class="line"><span class="at">[14:53:55]</span> <span class="muted">job-finished</span> name=close exit=<span class="good">0</span> log=.dabbler/runs/s9/driver/jobs/close.log</div>
+<div class="line"><span class="at">[14:53:55]</span> <span class="milestone">phase</span> phase=<span class="milestone">log</span></div></div>
+<h2>Verification</h2>
+<table>
+<tr><th>Round</th><th>Phase</th><th>Verdict</th><th>Reviewer</th><th>Provider</th><th>Transport</th><th>Findings</th></tr>
+<tr><td>1</td><td>full</td><td><span class="good">VERIFIED</span></td><td>gpt-5.6-terra</td><td>openai</td><td>api</td><td>0</td></tr>
+</table>
+<h2>Test runs</h2>
+<table>
+<tr><th>Suite</th><th>Stage</th><th>Outcome</th><th>Duration</th><th>Passed</th><th>Failed</th><th>Skipped</th><th>Command</th></tr>
+<tr><td>node</td><td>final-full</td><td><span class="good">passed</span></td><td>4s</td><td>26</td><td>0</td><td>0</td><td><span class="mono">node --test --test-timeout=60000 &quot;tests/**/*.test.js&quot;</span></td></tr>
+</table>
+<h2>Jobs</h2>
+<div><strong>close</strong> exit <span class="good">0</span> <span class="muted">(passed -- output not carried; dabbler transcript --full carries it)</span></div>
+<div><strong>run-of-record-node</strong> exit <span class="good">0</span> <span class="muted">(passed -- output not carried; dabbler transcript --full carries it)</span></div>
+<div><strong>verification</strong> exit <span class="good">0</span> <span class="muted">(passed -- output not carried; dabbler transcript --full carries it)</span></div>
+</main>
+</body>
+</html>
