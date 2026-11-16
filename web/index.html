@@ -376,6 +376,7 @@
     let userLoc = null;
     let effectiveLoc = null;
     let solarEnabled = false;
+    let locationPending = false;
     let lastDay = new Date().getDate();
     let dateOverride = null;
     let debugLines = [];
@@ -532,17 +533,21 @@
             } else {
                 // Need geolocation for "Local Time" mode
                 if (typeof navigator !== 'undefined' && navigator.geolocation) {
+                    if (locationPending) return;
+                    locationPending = true;
                     btn.innerText = "Requesting Location...";
                     dbg('Requesting geolocation...');
                     navigator.geolocation.getCurrentPosition(
                         function(pos) {
+                            locationPending = false;
                             userLoc = { lat: pos.coords.latitude, lng: pos.coords.longitude };
                             effectiveLoc = userLoc;
                             dbg('Geolocation OK: ' + JSON.stringify(userLoc));
                             enableSolar(btn, layer, icon);
                         },
                         function(err) {
-                            dbg('Geolocation FAILED: ' + err.message);
+                            locationPending = false;
+                            dbg('Geolocation FAILED (code ' + err.code + '): ' + err.message);
                             var fallback = guessFallbackLocation();
                             if (fallback) {
                                 effectiveLoc = fallback;
@@ -552,7 +557,8 @@
                                 btn.innerText = "☀ Show Daylight Time";
                                 dbg('No fallback. Please select a city from the timezone dropdown first.');
                             }
-                        }
+                        },
+                        { timeout: 10000, maximumAge: 600000 }
                     );
                 } else {
                     dbg('Geolocation API not available in this environment.');

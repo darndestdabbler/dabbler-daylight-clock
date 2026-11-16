@@ -1,7 +1,7 @@
 // The offline cache: every site file, kept under a versioned name. Change
 // CACHE when any file changes, so the next visit installs the new set and
 // activate clears the old one.
-const CACHE = 'daylight-clock-v1';
+const CACHE = 'daylight-clock-v2';
 
 const FILES = [
     './',

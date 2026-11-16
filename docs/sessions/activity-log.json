@@ -78,6 +78,13 @@
       "dateTime": "2026-11-16T03:27:07.371000-05:00",
       "task": "Add a single GitHub Actions workflow, .github/workflows/pages.yml, that publishes the static site in web/ to GitHub Pages. It runs only by hand (workflow_dispatch), checks out the trunk, uploads web/ as it stands with actions/upload-pages-artifact, and deploys it with actions/deploy-pages, with the pages: write and id-token: write permissions and the github-pages environment those actions need. It has no build step and touches no file under web/. The DNS CNAME record, the repository's Pages settings (source GitHub Actions, custom domain clock.darndestdabbler.org, HTTPS enforced) and running the workflow after each release are the person's, outside the repository.",
       "releasable": false
+    },
+    {
+      "kind": "task-declaration",
+      "sessionNumber": 12,
+      "dateTime": "2026-11-16T05:09:12.778000-05:00",
+      "task": "Make the daylight toggle recover when the browser never answers a location request. In web/index.html's toggleSolar, getCurrentPosition is passed { timeout: 10000, maximumAge: 600000 }, so an unanswered request ends in the error callback and the existing timezone fallback, as a refusal already does; a flag set while a request is pending makes a further tap on the button start no second request, and both callbacks clear it; the debug panel's failure line carries the error's code as well as its message. CACHE in web/sw.js is bumped to daylight-clock-v2 so installed copies pick up the change.",
+      "releasable": false
     }
   ]
 }
