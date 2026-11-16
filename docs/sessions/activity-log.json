@@ -92,6 +92,13 @@
       "dateTime": "2026-11-16T07:05:54.944000-05:00",
       "task": "Give the 24 \u00d7 60 \u00d7 60 face a minute-tick dial read by four numbers and twenty dots, leaving the 48 clock's face as it is. In web/clock-core.js, faceLayout(\"24x60x60\") returns 60 ticks, one per minute 6\u00b0 apart with a major every 5; labels 0, 6, 12 and 18 at the quarter days, all major, and no others; and a new dots list holding one { angle } for each of the other 20 hours at 15\u00b0 per hour. The 48 clock's faceLayout keeps its ticks and labels and returns dots: []. The faceLayout tests in tests/clock-core.test.js are updated to match, and the 24 \u00d7 60 \u00d7 60 face row and matching contract lines in docs/planning/solution-plan.md describe the new face. In web/index.html, drawAnalogFace also draws each dot as a circle filled with the hour hand's rose (#cc79a7) and stroked black, at CONFIG.radiusMajor inside #analog-numbers so dots and numbers sit above the hands; the numbers draw at the major label scale. CACHE in web/sw.js becomes daylight-clock-v3.",
       "releasable": false
+    },
+    {
+      "kind": "task-declaration",
+      "sessionNumber": 14,
+      "dateTime": "2026-11-16T17:12:07.890000-05:00",
+      "task": "Release 1.1.0: the framework packs and publishes what is on the trunk.",
+      "releasable": true
     }
   ]
 }

@@ -25,7 +25,7 @@ The numbered sessions are declared from `session-plan.md`; each one's task is wh
 | 11 | Host on GitHub Pages at clock.darndestdabbler.org | no | 2026-11-16 |
 | 12 | Location that never answers falls back | no | 2026-11-16 |
 | 13 | The 24 × 60 × 60 face read by numbers, dots and minute ticks | no | 2026-11-16 |
-| 14 | Release 1.1.0 (release: 1.1.0) | — | not declared |
+| 14 | Release 1.1.0 (release: 1.1.0) | yes | 2026-11-16 |
 
 ### Session 1 — Author or import the solution plan
 
@@ -104,3 +104,9 @@ Make the daylight toggle recover when the browser never answers a location reque
 **Releasable: no.**
 
 Give the 24 × 60 × 60 face a minute-tick dial read by four numbers and twenty dots, leaving the 48 clock's face as it is. In web/clock-core.js, faceLayout("24x60x60") returns 60 ticks, one per minute 6° apart with a major every 5; labels 0, 6, 12 and 18 at the quarter days, all major, and no others; and a new dots list holding one { angle } for each of the other 20 hours at 15° per hour. The 48 clock's faceLayout keeps its ticks and labels and returns dots: []. The faceLayout tests in tests/clock-core.test.js are updated to match, and the 24 × 60 × 60 face row and matching contract lines in docs/planning/solution-plan.md describe the new face. In web/index.html, drawAnalogFace also draws each dot as a circle filled with the hour hand's rose (#cc79a7) and stroked black, at CONFIG.radiusMajor inside #analog-numbers so dots and numbers sit above the hands; the numbers draw at the major label scale. CACHE in web/sw.js becomes daylight-clock-v3.
+
+### Session 14 — Release 1.1.0 (release: 1.1.0)
+
+**Releasable: yes.**
+
+Release 1.1.0: the framework packs and publishes what is on the trunk.
