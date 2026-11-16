@@ -251,3 +251,44 @@ starting with the skeleton session.
    Pages settings, source *GitHub Actions* and custom domain
    `clock.darndestdabbler.org` with HTTPS enforced; then a run of the
    workflow after each release.
+
+### Session 12: Location that never answers falls back
+
+1. Register.
+2. On an iPhone (Chrome) the button stays on "Requesting Location..." and
+   the debug panel shows only "Requesting geolocation..." — the browser
+   never calls back, and each tap stacks another request. In
+   `web/index.html`'s `toggleSolar`:
+   - pass `getCurrentPosition` the options `{ timeout: 10000,
+     maximumAge: 600000 }`, so a request nobody answers ends in the error
+     callback and the timezone fallback, as a refusal already does;
+   - while a request is pending, a tap on the button starts no second one;
+   - the error line in the debug panel carries the error's `code` as well
+     as its `message`.
+   Bump `CACHE` in `web/sw.js` to `daylight-clock-v2`. The step's check
+   proves `index.html` passes a `timeout` to `getCurrentPosition`.
+
+### Session 13: The 24 × 60 × 60 face read by numbers, dots and minute ticks
+
+1. Register.
+2. Change `faceLayout("24x60x60")` in `web/clock-core.js`, and leave the
+   48 clock's face as it is:
+   - 60 ticks, one per minute (6° apart), a major every 5, so the minute
+     and second hands land on a tick;
+   - labels `0`, `6`, `12` and `18` at the quarter days, all major, and no
+     other labels;
+   - a new `dots` list: one `{ angle }` for each of the other 20 hours, at
+     the hour's angle (15° per hour), five between each pair of numbers.
+     The 48 clock's `faceLayout` returns `dots: []`.
+   Update the 24 × 60 × 60 `faceLayout` test in `tests/clock-core.test.js`
+   to these, and add `dots: []` to the 48 clock's. Amend the 24 × 60 × 60
+   face row and the matching contract lines in
+   `docs/planning/solution-plan.md` to the new face.
+3. In `web/index.html`, `drawAnalogFace` draws each dot as a circle in the
+   hour hand's rose (`#cc79a7`) with a black stroke, at the labels' radius
+   (`CONFIG.radiusMajor`), inside `#analog-numbers`, so dots and numbers
+   both sit above the hands, as if printed on glass over them. The
+   numbers draw at the major label scale. Bump `CACHE` in `web/sw.js` to
+   `daylight-clock-v3`.
+
+### Session 14: Release 1.1.0 (release: 1.1.0)
