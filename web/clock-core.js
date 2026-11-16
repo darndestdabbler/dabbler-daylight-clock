@@ -90,30 +90,31 @@
     }
 
     /**
-     * The face, as ticks, labels and dots; angles are degrees clockwise from
-     * the top. 24 x 60 x 60: one tick per minute of the minute hand's turn,
-     * major every 5; the hour (0 6 12 18) at the quarter days, and a dot at
-     * each other hour. The 48 clock: one tick per dour, major every 4; a label
-     * on each major tick, the quarter-day number (0 1 2 3) at the quarter days
-     * and, between them, the dour count within its quarter; no dots.
+     * The face, as ticks, labels and hour ticks; angles are degrees clockwise
+     * from the top. 24 x 60 x 60: one tick per minute of the minute hand's
+     * turn, major every 5; the hour as a major label (0 6 12 18) at the
+     * quarter days and a minor one (3 9 15 21) between them; and an hour tick
+     * at each of the 24 hours. The 48 clock: one tick per dour, major every 4;
+     * a label on each major tick, the quarter-day number (0 1 2 3) at the
+     * quarter days and, between them, the dour count within its quarter; no
+     * hour ticks.
      */
     function faceLayout(id) {
         var n = systemOf(id).divisions[0];
         if (id === '24x60x60') {
             var minuteTicks = [];
             var hourLabels = [];
-            var dots = [];
+            var hourTicks = [];
             for (var m = 0; m < 60; m++) {
                 minuteTicks.push({ angle: m * 6, major: m % 5 === 0 });
             }
             for (var h = 0; h < 24; h++) {
-                if (h % 6 === 0) {
-                    hourLabels.push({ angle: h * 15, text: String(h), major: true });
-                } else {
-                    dots.push({ angle: h * 15 });
+                if (h % 3 === 0) {
+                    hourLabels.push({ angle: h * 15, text: String(h), major: h % 6 === 0 });
                 }
+                hourTicks.push({ angle: h * 15 });
             }
-            return { ticks: minuteTicks, labels: hourLabels, dots: dots };
+            return { ticks: minuteTicks, labels: hourLabels, hourTicks: hourTicks };
         }
         var majorEvery = n / 12;
         var quarter = n / 4;
@@ -132,7 +133,7 @@
                 });
             }
         }
-        return { ticks: ticks, labels: labels, dots: [] };
+        return { ticks: ticks, labels: labels, hourTicks: [] };
     }
 
     // ===========================================

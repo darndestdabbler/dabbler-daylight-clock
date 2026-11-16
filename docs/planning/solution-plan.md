@@ -12,8 +12,8 @@ divisions of the day the user picks:
 
 | System | Divisions | Hands | Digital readout | Face labels |
 |---|---|---|---|---|
-| **24 × 60 × 60** (default) | hour / minute / second | hour (one turn a day), minute (one turn an hour), second (one turn a minute) | base 10, 24-hour `HH:MM:SS` | 0 6 12 18 at the quarter days, and a dot in the hour hand's rose at each of the other 20 hours; 60 minute ticks, a major every 5, so the minute and second hands land on a tick |
-| **48 × 48 × 48** ("the 48 clock") | dour / zan / mec (30 min / 37.5 s / 0.78125 s) | dour (one turn a day), zan (one turn a dour), mec (one turn a zan) | dozenal `DD:ZZ:MM` with X and E, as today | majors 0 1 2 3 at the quarter days; minors 4 and 8, as today |
+| **24 × 60 × 60** | hour / minute / second | hour (one turn a day), minute (one turn an hour), second (one turn a minute) | base 10, 24-hour `HH:MM:SS` | majors 0 6 12 18 at the quarter days; minors 3 9 15 21 between them; an hour tick in the hour hand's rose at each of the 24 hours, at the face's edge; 60 minute ticks, a major every 5, so the minute and second hands land on a tick |
+| **48 × 48 × 48** ("the 48 clock") (default) | dour / zan / mec (30 min / 37.5 s / 0.78125 s) | dour (one turn a day), zan (one turn a dour), mec (one turn a zan) | dozenal `DD:ZZ:MM` with X and E, as today | majors 0 1 2 3 at the quarter days; minors 4 and 8, as today |
 
 In both systems the dial is the whole day, so the quarter-day majors, the
 sunrise/sunset wedges and the shortest-day markers sit in the same places;
@@ -87,7 +87,8 @@ browser:
     at a time, as in v3); `formatReading` gives `HH:MM:SS` in base 10 for
     24 × 60 × 60 and two dozenal digits per unit (X = 10, E = 11) for the
     48 clock; `faceLayout(system)` gives the tick list (angle, major/minor),
-    label list (angle, text) and dot list (angle; empty for the 48 clock). Same input, same output: no clock reads,
+    label list (angle, text, major/minor) and `hourTicks` list (angle; empty
+    for the 48 clock). Same input, same output: no clock reads,
     no randomness.
   - *Failure:* an unknown system id or a time outside `[0, 86400)` throws a
     `RangeError`; a polar day or night (no sunrise/sunset) returns `null`,
@@ -152,8 +153,8 @@ sessions.
    - `reading`, `handAngles`, `formatReading` and `faceLayout` for both
      systems, with their tests.
    - The 24 × 60 × 60 face (24 ticks, majors 0–3, minors 2 and 4), its
-     base-10 24-hour readout, and the system selector (default
-     24 × 60 × 60, remembered).
+     base-10 24-hour readout, and the system selector (remembered; the
+     48 clock is the default).
    - The Z removed from the zan hand; the line under the readout shows the
      other system's reading.
 3. **About page** (1 session)
@@ -195,7 +196,8 @@ Session 002 challenged each cut before breaking the plan into sessions.
   `[6, 0, 0]`, formatted `06:00:00`, in 24 × 60 × 60, and the reading
   `[12, 0, 0]`, formatted `10:00:00` (dour 12 in dozenal), in the 48 clock. Each third hand
   steps whole units. `faceLayout("24x60x60")` has 60 ticks, a major every
-  5, labels 0 6 12 18 at the quarter days and a dot at each other hour.
+  5, labels 0 6 12 18 (major) and 3 9 15 21 (minor), and an hour tick at
+  each of the 24 hours.
   An unknown system id or `86400` throws `RangeError`. A polar date returns
   `null`. The v3 solar output for a fixed date and city must be reproduced
   exactly.

@@ -213,6 +213,7 @@
     <defs>
         <rect id="tick-major" width="4" height="16" x="-2" y="-90" />
         <rect id="tick-minor" width="4" height="8" x="-2" y="-90" />
+        <rect id="tick-hour" width="2.5" height="6" x="-1.25" y="-97" fill="#cc79a7" stroke="none" />
         
         <path id="hand-dour" style="fill:#cc79a7;fill-opacity:1" d="M -2,16 L -6,0 l 4,-82 H 2 L 6,0 L 2,16 Z M 0,-1 C -0.554,-1 -1,-0.554 -1,0 C -1,0.554 -0.554,1 0,1 C 0.554,1 1,0.554 1,0 C 1,-0.554 0.554,-1 0,-1 Z" />
         <path id="hand-zan" style="fill:#56b3e9;fill-opacity:1" d="M -1.33333 16 L -4 0 L -1.33333 -86 L 1.33333 -86 L 4 0 L 1.33333 16 Z M 0 -1 C -0.554 -1 -1 -0.554 -1 0 C -1 0.554 -0.554 1 0 1 C 0.554 1 1 0.554 1 0 C 1 -0.554 0.554 -1 0 -1 Z" />
@@ -256,6 +257,9 @@
 
     <!-- White clock face with tick-mark holes -->
     <circle r="98" class="t-face" mask="url(#mask-face-plate)" />
+
+    <!-- Hour ticks in the hour hand's rose, at the edge and beneath the hands -->
+    <g id="hour-ticks"></g>
 
     <!-- Shortest-day marker: a limit, not a quantity, so it's drawn as a
          thin line across the rim (plus a pointer outside the dial) at the
@@ -348,7 +352,7 @@
     };
 
     // The time system the face and readout are drawn in (see ClockCore.SYSTEMS)
-    let system = '24x60x60';
+    let system = '48x48x48';
 
     const CX_FACE = 0;
     const CY_FACE = 0;
@@ -448,12 +452,12 @@
     })();
 
     // ===========================================
-    // TIME SYSTEM (24 × 60 × 60 by default; the choice is remembered)
+    // TIME SYSTEM (the 48 clock by default; the choice is remembered)
     // ===========================================
     const SYSTEM_KEY = 'quadi-dozenal-system';
 
     function setSystem(choice, remember) {
-        if (!Object.prototype.hasOwnProperty.call(ClockCore.SYSTEMS, choice)) choice = '24x60x60';
+        if (!Object.prototype.hasOwnProperty.call(ClockCore.SYSTEMS, choice)) choice = '48x48x48';
         system = choice;
         document.getElementById('system-select').value = choice;
         if (remember) {
@@ -464,18 +468,28 @@
     }
 
     // ===========================================
-    // FACE: MASK TICKS
+    // FACE: MASK TICKS AND HOUR TICKS
     // ===========================================
     function generateTicks() {
+        var face = ClockCore.faceLayout(system);
         var maskGroup = document.getElementById('mask-ticks-container');
         maskGroup.innerHTML = "";
-        ClockCore.faceLayout(system).ticks.forEach(function(tick) {
+        face.ticks.forEach(function(tick) {
             var ref = tick.major ? '#tick-major' : '#tick-minor';
             var useMask = document.createElementNS("http://www.w3.org/2000/svg", "use");
             useMask.setAttribute("href", ref);
             useMask.setAttribute("transform", "rotate(" + tick.angle + ")");
             useMask.setAttribute("fill", "black");
             maskGroup.appendChild(useMask);
+        });
+        // Hour ticks: solid, between the minute ticks' ends (90) and the edge (98)
+        var hourGroup = document.getElementById('hour-ticks');
+        hourGroup.innerHTML = "";
+        face.hourTicks.forEach(function(tick) {
+            var useHour = document.createElementNS("http://www.w3.org/2000/svg", "use");
+            useHour.setAttribute("href", "#tick-hour");
+            useHour.setAttribute("transform", "rotate(" + tick.angle + ")");
+            hourGroup.appendChild(useHour);
         });
     }
 
@@ -696,6 +710,23 @@
     // ===========================================
     document.querySelectorAll("defs text").forEach(function(t) { t.setAttribute("font-size", "14"); });
 
+    // The middle of a glyph's ink, in glyph units below its central baseline
+    // (canvas's 'middle' is the same em-square middle), measured once. A
+    // turned digit turns about it, so its top and bottom stay level.
+    var inkMiddles = {};
+    function inkMiddle(refId) {
+        if (!(refId in inkMiddles)) {
+            var glyph = document.getElementById(refId);
+            var style = getComputedStyle(glyph);
+            var ctx = document.createElement('canvas').getContext('2d');
+            ctx.font = style.fontWeight + ' ' + style.fontSize + ' ' + style.fontFamily;
+            ctx.textBaseline = 'middle';
+            var ink = ctx.measureText(glyph.textContent);
+            inkMiddles[refId] = (ink.actualBoundingBoxDescent - ink.actualBoundingBoxAscent) / 2;
+        }
+        return inkMiddles[refId];
+    }
+
     function createGlyphInstance(char, scaleX, scaleY, color) {
         var refId = 'asset-glyph-' + char;
         var rotation = 0;
@@ -706,7 +737,7 @@
         var use = document.createElementNS("http://www.w3.org/2000/svg", "use");
         use.setAttribute("href", "#" + refId);
         use.style.fill = color;
-        return { element: use, rotation: rotation };
+        return { element: use, rotation: rotation, pivotY: rotation ? inkMiddle(refId) : 0 };
     }
 
     function renderNumber(container, valueStr, centerX, centerY, scaleX, scaleY, color) {
@@ -722,7 +753,7 @@
             var p = glyphObj.element;
             var localX = startX + (i * (charWidth + spacing));
             var transform = 'translate(' + localX + ', 0) scale(' + scaleX + ', ' + scaleY + ')';
-            if (glyphObj.rotation !== 0) transform += ' rotate(' + glyphObj.rotation + ')'; 
+            if (glyphObj.rotation !== 0) transform += ' rotate(' + glyphObj.rotation + ', 0, ' + glyphObj.pivotY + ')';
             p.setAttribute("transform", transform);
             group.appendChild(p);
         }
@@ -741,18 +772,6 @@
             var x = r * Math.cos(angle);
             var y = r * Math.sin(angle);
             renderNumber(container, label.text, x, y, sc, sc, "var(--numeral)");
-        });
-        // Hour dots, in the hour hand's rose, over the hands like the numbers.
-        face.dots.forEach(function(dot) {
-            var angle = (dot.angle - 90) * Math.PI / 180;
-            var circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-            circle.setAttribute("cx", CONFIG.radiusMajor * Math.cos(angle));
-            circle.setAttribute("cy", CONFIG.radiusMajor * Math.sin(angle));
-            circle.setAttribute("r", 3);
-            circle.setAttribute("fill", "#cc79a7");
-            circle.setAttribute("stroke", "black");
-            circle.setAttribute("stroke-width", 0.8);
-            container.appendChild(circle);
         });
     }
 
@@ -817,8 +836,8 @@
     }
 
     (function initSystem() {
-        var saved = '24x60x60';
-        try { saved = localStorage.getItem(SYSTEM_KEY) || '24x60x60'; } catch (e) { /* storage unavailable */ }
+        var saved = '48x48x48';
+        try { saved = localStorage.getItem(SYSTEM_KEY) || '48x48x48'; } catch (e) { /* storage unavailable */ }
         setSystem(saved, false);
     })();
     updateClock();
