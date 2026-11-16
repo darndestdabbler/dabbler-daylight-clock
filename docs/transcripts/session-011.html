@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Session 011 transcript</title>
+<style>
+:root {
+  --page: #ffffff;
+  --ink: #1f1f1f;
+  --faint: #e4e4e4;
+  --panel: #f6f6f6;
+  --tone-milestone: #2a5db0;
+  --tone-good: #256029;
+  --tone-warn: #8a6100;
+  --tone-bad: #a31515;
+  --tone-muted: #6b6b6b;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --page: #1e1e1e;
+    --ink: #d4d4d4;
+    --faint: #3a3a3a;
+    --panel: #252526;
+  --tone-milestone: #3874db;
+  --tone-good: #54a33b;
+  --tone-warn: #b79427;
+  --tone-bad: #f14c4c;
+  --tone-muted: #8c8c8c;
+  }
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  padding: 24px 16px 64px;
+  background: var(--page);
+  color: var(--ink);
+  font: 14px/1.6 ui-sans-serif, system-ui, "Segoe UI", sans-serif;
+}
+main { max-width: 68rem; margin: 0 auto; }
+h1 { font-size: 1.4rem; margin: 0 0 .25rem; }
+h2 { font-size: 1.05rem; margin: 2.5rem 0 .75rem; border-bottom: 1px solid var(--faint); padding-bottom: .3rem; }
+.stamp { color: var(--tone-muted); font-size: .85rem; margin: 0 0 .25rem; }
+.mono, pre, code { font-family: ui-monospace, "Cascadia Mono", Consolas, monospace; }
+.lines { font-family: ui-monospace, "Cascadia Mono", Consolas, monospace; font-size: 13px; }
+.line { white-space: pre-wrap; word-break: break-word; padding-left: 10.5ch; text-indent: -10.5ch; }
+.at { color: var(--tone-muted); }
+table { border-collapse: collapse; width: 100%; font-size: 13px; }
+th, td { text-align: left; padding: .35rem .6rem; border-bottom: 1px solid var(--faint); vertical-align: top; }
+th { color: var(--tone-muted); font-weight: 600; }
+details { margin: .5rem 0; }
+summary { cursor: pointer; }
+td details { margin: 0; }
+tr:has(details:not([open])) + tr.findings { display: none; }
+tr.findings > td { padding: 0 0 .5rem 1.5rem; }
+pre { background: var(--panel); padding: .75rem; overflow-x: auto; white-space: pre-wrap; word-break: break-word; font-size: 12.5px; }
+.stop, .cancelled { border-left: 3px solid var(--tone-bad); background: var(--panel); padding: .6rem .9rem; }
+.milestone { color: var(--tone-milestone); }
+.good { color: var(--tone-good); }
+.warn { color: var(--tone-warn); }
+.bad { color: var(--tone-bad); }
+.muted { color: var(--tone-muted); }
+</style>
+</head>
+<body>
+<main>
+<h1>Session 011 transcript</h1>
+<p class="stamp">Rendered 2026-11-16T08:31:36.561Z by dabbler-ai-router 3.34.0 at 6256034ecf8a7ebea1096f25d50fced3998c7c5d.</p>
+<p class="stamp">Engine cli, last phase <span class="milestone">log</span>, started 2026-11-16T03:26:09.818-05:00.</p>
+<h2>Session Plan</h2>
+<h3>Session 11: Host on GitHub Pages at clock.darndestdabbler.org</h3>
+<ol><li>Register.</li><li>Add <code>.github/workflows/pages.yml</code>, and nothing else: run by hand (<code>workflow_dispatch</code>) only, it uploads <code>web/</code> as it stands on the trunk with <code>actions/upload-pages-artifact</code> and deploys it with <code>actions/deploy-pages</code>. It has no build step and touches no file under <code>web/</code>. The step's check proves the workflow file exists and names <code>web</code> as the uploaded path.</li><li>The person does the rest, outside the repository: a DNS <code>CNAME</code> record from <code>clock</code> to <code>darndestdabbler.github.io</code>; in the repository's Pages settings, source *GitHub Actions* and custom domain <code>clock.darndestdabbler.org</code> with HTTPS enforced; then a run of the workflow after each release.</li></ol>
+<h2>Work Plan</h2>
+<p>Add a single GitHub Actions workflow, .github/workflows/pages.yml, that publishes the static site in web/ to GitHub Pages. It runs only by hand (workflow_dispatch), checks out the trunk, uploads web/ as it stands with actions/upload-pages-artifact, and deploys it with actions/deploy-pages, with the pages: write and id-token: write permissions and the github-pages environment those actions need. It has no build step and touches no file under web/. The DNS CNAME record, the repository's Pages settings (source GitHub Actions, custom domain clock.darndestdabbler.org, HTTPS enforced) and running the workflow after each release are the person's, outside the repository.</p>
+<p>Landed <a href="https://github.com/darndestdabbler/dabbler-daylight-clock/commit/50e1ec784a97d65c54ec80027c7b9d77af501470"><code>50e1ec784a97d65c54ec80027c7b9d77af501470</code></a>.</p>
+<table>
+<tr><th>Step</th><th>Ask</th><th>Files</th><th>Checks</th><th>Accepted</th></tr>
+<tr><td>Pages workflow</td><td><p>Create .github/workflows/pages.yml: on workflow_dispatch only; permissions contents: read, pages: write, id-token: write; a concurrency group for pages; one deploy job on ubuntu-latest in the github-pages environment (url from the deploy step's page_url) that runs actions/checkout, actions/configure-pages, actions/upload-pages-artifact with path: web, and actions/deploy-pages. Nothing else.</p></td><td><span class="mono">.github/workflows/pages.yml</span></td><td><code>node -e const t=require('fs').readFileSync('.github/workflows/pages.yml','utf8');const ok=/^\s*path:\s*['&quot;]?web\/?['&quot;]?\s*$/m.test(t)&amp;&amp;t.includes('actions/upload-pages-artifact')&amp;&amp;t.includes('actions/deploy-pages')&amp;&amp;t.includes('workflow_dispatch');if(!ok){console.error('pages.yml does not upload web with upload-pages-artifact/deploy-pages on workflow_dispatch');process.exit(1)}</code></td><td>yes</td></tr>
+</table>
+<p>Non-goals:</p>
+<ul><li>No build step, bundling or minification: web/ is uploaded exactly as it stands on the trunk.</li><li>No change to any file under web/, including no CNAME file there: the custom domain is set in the repository's Pages settings by the person.</li><li>No automatic trigger (push, release or schedule): the workflow runs only by workflow_dispatch.</li><li>No DNS record, Pages settings change or workflow run from this session: those are the person's, outside the repository.</li><li>No change to dabbler.yaml, its packaging block or the test suite.</li></ul>
+<h2>What the framework said</h2>
+<div class="lines"><div class="line"><span class="at">[08:26:09]</span> <span class="muted">run-started</span> session=011 mode=pull</div>
+<div class="line"><span class="at">[08:26:09]</span> <span class="muted">instruction-issued</span> seq=1 kind=step step=plan</div>
+<div class="line"><span class="at">[08:27:03]</span> <span class="muted">run-resumed</span> session=011 phase=<span class="milestone">plan</span> mode=pull</div>
+<div class="line"><span class="at">[08:27:03]</span> <span class="muted">plan-accepted</span> steps=[&quot;pages-workflow&quot;] non_goals=5</div>
+<div class="line"><span class="at">[08:27:09]</span> <span class="milestone">phase</span> phase=<span class="milestone">work</span></div>
+<div class="line"><span class="at">[08:27:09]</span> <span class="muted">instruction-issued</span> seq=2 kind=step step=pages-workflow</div>
+<div class="line"><span class="at">[08:27:30]</span> <span class="muted">run-resumed</span> session=011 phase=<span class="milestone">work</span> mode=pull</div>
+<div class="line"><span class="at">[08:27:38]</span> <span class="muted">check-passed</span> step=pages-workflow argv=[&quot;node&quot;,&quot;-e&quot;,&quot;const t=require('fs').readFileSync('.github/workflows/pages.yml','utf8');const ok=/^\\s*path:\\s*['\&quot;]?web\\/?['\&quot;]?\\s*$/m.test(t)&amp;&amp;t.includes('actions/upload-pages-artifact')&amp;&amp;t.includes('actions/deploy-pages')&amp;&amp;t.includes('workflow_dispatch');if(!ok){console.error('pages.yml does not upload web with upload-pages-artifact/deploy-pages on workflow_dispatch');process.exit(1)}&quot;]</div>
+<div class="line"><span class="at">[08:27:39]</span> <span class="muted">report-accepted</span> seq=2 step=pages-workflow files=[&quot;.github/workflows/pages.yml&quot;] notes=Added workflow_dispatch-only Pages workflow uploading web/ via upload-pages-artifact and deploy-pages</div>
+<div class="line"><span class="at">[08:27:39]</span> <span class="milestone">phase</span> phase=<span class="milestone">preverify</span></div>
+<div class="line"><span class="at">[08:27:39]</span> <span class="milestone">phase</span> phase=<span class="milestone">verify</span></div>
+<div class="line"><span class="at">[08:27:43]</span> <span class="muted">job-started</span> name=verification pid=23708 log=.dabbler/runs/s11/driver/jobs/verification.log</div>
+<div class="line"><span class="at">[08:29:23]</span> <span class="muted">job-finished</span> name=verification exit=<span class="good">0</span> log=.dabbler/runs/s11/driver/jobs/verification.log</div>
+<div class="line"><span class="at">[08:29:23]</span> <span class="muted">verification-passed</span></div>
+<div class="line"><span class="at">[08:29:23]</span> <span class="milestone">phase</span> phase=<span class="milestone">run-of-record</span></div>
+<div class="line"><span class="at">[08:29:35]</span> <span class="muted">run-of-record</span> suite=node stage=final-full why=node declares no select command=node --test --test-timeout=60000 &quot;tests/**/*.test.js&quot;</div>
+<div class="line"><span class="at">[08:29:36]</span> <span class="muted">job-started</span> name=run of record: node pid=6912 log=.dabbler/runs/s11/driver/jobs/run-of-record-node.log</div>
+<div class="line"><span class="at">[08:29:49]</span> <span class="muted">job-finished</span> name=run of record: node exit=<span class="good">0</span> log=.dabbler/runs/s11/driver/jobs/run-of-record-node.log</div>
+<div class="line"><span class="at">[08:29:49]</span> <span class="milestone">phase</span> phase=<span class="milestone">land</span></div>
+<div class="line"><span class="at">[08:30:25]</span> <span class="muted">landed</span> commit=50e1ec784a97d65c54ec80027c7b9d77af501470</div>
+<div class="line"><span class="at">[08:30:25]</span> <span class="milestone">phase</span> phase=<span class="milestone">publish</span></div>
+<div class="line"><span class="at">[08:30:32]</span> <span class="muted">publish-skipped</span> reason=an ordinary session never publishes</div>
+<div class="line"><span class="at">[08:30:32]</span> <span class="milestone">phase</span> phase=<span class="milestone">close</span></div>
+<div class="line"><span class="at">[08:30:38]</span> <span class="muted">job-started</span> name=close pid=63656 log=.dabbler/runs/s11/driver/jobs/close.log</div>
+<div class="line"><span class="at">[08:31:36]</span> <span class="muted">job-finished</span> name=close exit=<span class="good">0</span> log=.dabbler/runs/s11/driver/jobs/close.log</div>
+<div class="line"><span class="at">[08:31:36]</span> <span class="milestone">phase</span> phase=<span class="milestone">log</span></div></div>
+<h2>Verification</h2>
+<table>
+<tr><th>Round</th><th>Phase</th><th>Verdict</th><th>Reviewer</th><th>Provider</th><th>Transport</th><th>Findings</th></tr>
+<tr><td>1</td><td>full</td><td><span class="good">VERIFIED</span></td><td>gpt-5.6-terra</td><td>openai</td><td>api</td><td><details><summary>2 findings</summary></details></td></tr><tr class="findings"><td colspan="7"><table>
+<tr><th>#</th><th>Severity</th><th>Finding</th><th>Response</th></tr>
+<tr><td>0</td><td><strong>minor</strong></td><td>**Nit:** `.github/workflows/pages.yml` does not pin `actions/checkout` to `trunk`. A manual dispatch launched against another branch deploys that branch’s `web/`, not trunk’s. Adding `with: ref: trunk` would enforce the stated source; selecting a non-default ref is an uncommon operator action, so this is non-blocking.</td><td>not answered</td></tr>
+<tr><td>1</td><td><strong>minor</strong></td><td>**Nit:** The response labels the complete working-tree diff as empty while `git status --short` reports three tracked modified files under `docs/sessions/`. Their contents are not available to independently verify the required registration/bookkeeping updates.</td><td>not answered</td></tr>
+</table></td></tr>
+</table>
+<h2>Test runs</h2>
+<table>
+<tr><th>Suite</th><th>Stage</th><th>Outcome</th><th>Duration</th><th>Passed</th><th>Failed</th><th>Skipped</th><th>Command</th></tr>
+<tr><td>node</td><td>final-full</td><td><span class="good">passed</span></td><td>4s</td><td>26</td><td>0</td><td>0</td><td><span class="mono">node --test --test-timeout=60000 &quot;tests/**/*.test.js&quot;</span></td></tr>
+</table>
+<h2>Jobs</h2>
+<div><strong>close</strong> exit <span class="good">0</span> <span class="muted">(passed -- output not carried; dabbler transcript --full carries it)</span></div>
+<div><strong>run-of-record-node</strong> exit <span class="good">0</span> <span class="muted">(passed -- output not carried; dabbler transcript --full carries it)</span></div>
+<div><strong>verification</strong> exit <span class="good">0</span> <span class="muted">(passed -- output not carried; dabbler transcript --full carries it)</span></div>
+</main>
+</body>
+</html>
