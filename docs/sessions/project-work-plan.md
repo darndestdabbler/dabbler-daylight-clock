@@ -27,7 +27,7 @@ The numbered sessions are declared from `session-plan.md`; each one's task is wh
 | 13 | The 24 × 60 × 60 face read by numbers, dots and minute ticks | no | 2026-11-16 |
 | 14 | Release 1.1.0 (release: 1.1.0) | yes | 2026-11-16 |
 | 15 | Hour ticks at the edge, minor numbers, level turned digits, and the 48 clock by default | no | 2026-11-16 |
-| 16 | Release 1.2.0 (release: 1.2.0) | — | not declared |
+| 16 | Release 1.2.0 (release: 1.2.0) | yes | 2026-11-16 |
 
 ### Session 1 — Author or import the solution plan
 
@@ -118,3 +118,9 @@ Release 1.1.0: the framework packs and publishes what is on the trunk.
 **Releasable: no.**
 
 Mark every hour on the 24 × 60 × 60 face, add its minor numbers, level the turned digits and make the 48 clock the default. In web/clock-core.js, faceLayout("24x60x60") keeps its 60 minute ticks (a major every 5) and labels 0, 6, 12 and 18 as majors, adds 3, 9, 15 and 21 as minor labels (major: false) at 15° per hour, and replaces dots with hourTicks: one { angle } per hour for all 24 hours; the 48 clock's faceLayout keeps its ticks and labels and returns hourTicks: [] in place of dots. Both faceLayout tests in tests/clock-core.test.js and the comment above faceLayout are updated to match. In web/index.html, drawAnalogFace stops drawing dots; each hour tick is drawn as a small solid rose (#cc79a7) rectangle with no stroke, pointing at the centre, in the band between radius 90 and radius 98 touching neither, in a group above the face plate and beneath the hands, cleared and redrawn when the system switches; minor labels draw at CONFIG.radiusMinor and CONFIG.scaleMinor as the 48 clock's do. renderNumber turns the turned 2 and 3 (X and E) 180° about the middle of the digit's ink, measured once from the glyph font, instead of its text origin, so they sit level with neighbouring digits at every scale. The system drawn when nothing is saved, and the fallback for an unknown saved value, become 48x48x48, while a saved choice is still honoured; CACHE in web/sw.js becomes daylight-clock-v4. docs/planning/solution-plan.md has its 24 × 60 × 60 face row, its faceLayout contract lines and its default marks amended to match.
+
+### Session 16 — Release 1.2.0 (release: 1.2.0)
+
+**Releasable: yes.**
+
+Release 1.2.0: the framework packs and publishes what is on the trunk.

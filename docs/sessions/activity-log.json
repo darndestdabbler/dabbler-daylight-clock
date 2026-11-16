@@ -106,6 +106,13 @@
       "dateTime": "2026-11-16T18:18:39.810000-05:00",
       "task": "Mark every hour on the 24 \u00d7 60 \u00d7 60 face, add its minor numbers, level the turned digits and make the 48 clock the default. In web/clock-core.js, faceLayout(\"24x60x60\") keeps its 60 minute ticks (a major every 5) and labels 0, 6, 12 and 18 as majors, adds 3, 9, 15 and 21 as minor labels (major: false) at 15\u00b0 per hour, and replaces dots with hourTicks: one { angle } per hour for all 24 hours; the 48 clock's faceLayout keeps its ticks and labels and returns hourTicks: [] in place of dots. Both faceLayout tests in tests/clock-core.test.js and the comment above faceLayout are updated to match. In web/index.html, drawAnalogFace stops drawing dots; each hour tick is drawn as a small solid rose (#cc79a7) rectangle with no stroke, pointing at the centre, in the band between radius 90 and radius 98 touching neither, in a group above the face plate and beneath the hands, cleared and redrawn when the system switches; minor labels draw at CONFIG.radiusMinor and CONFIG.scaleMinor as the 48 clock's do. renderNumber turns the turned 2 and 3 (X and E) 180\u00b0 about the middle of the digit's ink, measured once from the glyph font, instead of its text origin, so they sit level with neighbouring digits at every scale. The system drawn when nothing is saved, and the fallback for an unknown saved value, become 48x48x48, while a saved choice is still honoured; CACHE in web/sw.js becomes daylight-clock-v4. docs/planning/solution-plan.md has its 24 \u00d7 60 \u00d7 60 face row, its faceLayout contract lines and its default marks amended to match.",
       "releasable": false
+    },
+    {
+      "kind": "task-declaration",
+      "sessionNumber": 16,
+      "dateTime": "2026-11-16T18:36:53.545000-05:00",
+      "task": "Release 1.2.0: the framework packs and publishes what is on the trunk.",
+      "releasable": true
     }
   ]
 }
