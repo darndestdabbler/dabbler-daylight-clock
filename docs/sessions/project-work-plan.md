@@ -22,6 +22,7 @@ The numbered sessions are declared from `session-plan.md`; each one's task is wh
 | 8 | The installable app | no | 2026-11-14 |
 | 9 | Packaging | no | 2026-11-14 |
 | 10 | Release 1.0.0 (release: 1.0.0) | yes | 2026-11-14 |
+| 11 | Host on GitHub Pages at clock.darndestdabbler.org | no | 2026-11-16 |
 
 ### Session 1 — Author or import the solution plan
 
@@ -82,3 +83,9 @@ Declare how this repository is packaged and published by adding a `packaging:` b
 **Releasable: yes.**
 
 Release 1.0.0: the framework packs and publishes what is on the trunk.
+
+### Session 11 — Host on GitHub Pages at clock.darndestdabbler.org
+
+**Releasable: no.**
+
+Add a single GitHub Actions workflow, .github/workflows/pages.yml, that publishes the static site in web/ to GitHub Pages. It runs only by hand (workflow_dispatch), checks out the trunk, uploads web/ as it stands with actions/upload-pages-artifact, and deploys it with actions/deploy-pages, with the pages: write and id-token: write permissions and the github-pages environment those actions need. It has no build step and touches no file under web/. The DNS CNAME record, the repository's Pages settings (source GitHub Actions, custom domain clock.darndestdabbler.org, HTTPS enforced) and running the workflow after each release are the person's, outside the repository.
