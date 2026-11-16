@@ -114,16 +114,15 @@ test('handAngles stay in [0, 360)', () => {
     }
 });
 
-test('faceLayout of 24 x 60 x 60: 24 ticks, a major every 2 hours, labels 0 1 2 3 and 2 4', () => {
+test('faceLayout of 24 x 60 x 60: 60 minute ticks, labels 0 6 12 18 and a dot at each other hour', () => {
     const face = ClockCore.faceLayout(H24);
-    assert.equal(face.ticks.length, 24);
-    face.ticks.forEach((t, i) => assert.deepEqual(t, { angle: i * 15, major: i % 2 === 0 }));
-    assert.deepEqual(face.labels.map((l) => l.text),
-        ['0', '2', '4', '1', '2', '4', '2', '2', '4', '3', '2', '4']);
-    face.labels.forEach((l, k) => {
-        assert.equal(l.angle, k * 30);
-        assert.equal(l.major, k % 3 === 0);
-    });
+    assert.equal(face.ticks.length, 60);
+    face.ticks.forEach((t, i) => assert.deepEqual(t, { angle: i * 6, major: i % 5 === 0 }));
+    assert.deepEqual(face.labels, [0, 6, 12, 18].map((h) => ({ angle: h * 15, text: String(h), major: true })));
+    const others = [];
+    for (let h = 0; h < 24; h++) if (h % 6 !== 0) others.push({ angle: h * 15 });
+    assert.equal(others.length, 20);
+    assert.deepEqual(face.dots, others);
 });
 
 test('faceLayout of the 48 clock: 48 ticks and the labels v3 draws', () => {
@@ -138,6 +137,7 @@ test('faceLayout of the 48 clock: 48 ticks and the labels v3 draws', () => {
         { v: 36, l: '3', maj: true }, { v: 40, l: '4', maj: false }, { v: 44, l: '8', maj: false }
     ];
     assert.deepEqual(face.labels, v3.map((p) => ({ angle: p.v * 7.5, text: p.l, major: p.maj })));
+    assert.deepEqual(face.dots, []);
 });
 
 test('an unknown system id throws RangeError', () => {

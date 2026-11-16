@@ -733,13 +733,26 @@
     function drawAnalogFace() {
         var container = document.getElementById('analog-numbers');
         container.innerHTML = ""; 
-        ClockCore.faceLayout(system).labels.forEach(function(label) {
+        var face = ClockCore.faceLayout(system);
+        face.labels.forEach(function(label) {
             var r = label.major ? CONFIG.radiusMajor : CONFIG.radiusMinor;
             var sc = label.major ? CONFIG.scaleMajor : CONFIG.scaleMinor;
             var angle = (label.angle - 90) * Math.PI / 180;
             var x = r * Math.cos(angle);
             var y = r * Math.sin(angle);
             renderNumber(container, label.text, x, y, sc, sc, "var(--numeral)");
+        });
+        // Hour dots, in the hour hand's rose, over the hands like the numbers.
+        face.dots.forEach(function(dot) {
+            var angle = (dot.angle - 90) * Math.PI / 180;
+            var circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+            circle.setAttribute("cx", CONFIG.radiusMajor * Math.cos(angle));
+            circle.setAttribute("cy", CONFIG.radiusMajor * Math.sin(angle));
+            circle.setAttribute("r", 3);
+            circle.setAttribute("fill", "#cc79a7");
+            circle.setAttribute("stroke", "black");
+            circle.setAttribute("stroke-width", 0.8);
+            container.appendChild(circle);
         });
     }
 

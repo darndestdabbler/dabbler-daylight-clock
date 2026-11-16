@@ -90,13 +90,31 @@
     }
 
     /**
-     * The face: one tick per first unit, major every 2 hours; a label on each
-     * major tick, the quarter-day number (0 1 2 3) at the quarter days and,
-     * between them, the tick's first-unit count within its quarter.
-     * Angles are degrees clockwise from the top.
+     * The face, as ticks, labels and dots; angles are degrees clockwise from
+     * the top. 24 x 60 x 60: one tick per minute of the minute hand's turn,
+     * major every 5; the hour (0 6 12 18) at the quarter days, and a dot at
+     * each other hour. The 48 clock: one tick per dour, major every 4; a label
+     * on each major tick, the quarter-day number (0 1 2 3) at the quarter days
+     * and, between them, the dour count within its quarter; no dots.
      */
     function faceLayout(id) {
         var n = systemOf(id).divisions[0];
+        if (id === '24x60x60') {
+            var minuteTicks = [];
+            var hourLabels = [];
+            var dots = [];
+            for (var m = 0; m < 60; m++) {
+                minuteTicks.push({ angle: m * 6, major: m % 5 === 0 });
+            }
+            for (var h = 0; h < 24; h++) {
+                if (h % 6 === 0) {
+                    hourLabels.push({ angle: h * 15, text: String(h), major: true });
+                } else {
+                    dots.push({ angle: h * 15 });
+                }
+            }
+            return { ticks: minuteTicks, labels: hourLabels, dots: dots };
+        }
         var majorEvery = n / 12;
         var quarter = n / 4;
         var ticks = [];
@@ -114,7 +132,7 @@
                 });
             }
         }
-        return { ticks: ticks, labels: labels };
+        return { ticks: ticks, labels: labels, dots: [] };
     }
 
     // ===========================================
