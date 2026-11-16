@@ -292,3 +292,43 @@ starting with the skeleton session.
    `daylight-clock-v3`.
 
 ### Session 14: Release 1.1.0 (release: 1.1.0)
+
+### Session 15: Hour ticks at the edge, minor numbers, level turned digits, and the 48 clock by default
+
+1. Register.
+2. Change `faceLayout("24x60x60")` in `web/clock-core.js`, and leave the
+   48 clock's ticks and labels as they are:
+   - the 60 minute ticks stay as they are, a major every 5;
+   - labels `0`, `6`, `12` and `18` stay major, and `3`, `9`, `15` and
+     `21` join them as minor labels (`major: false`) at their hours'
+     angles (15° per hour) — eight labels, and no others;
+   - `dots` goes, from both systems' layouts. In its place is `hourTicks`:
+     one `{ angle }` for each of the 24 hours, the labelled ones included,
+     at 15° per hour. The 48 clock's `faceLayout` returns `hourTicks: []`.
+   Update both `faceLayout` tests in `tests/clock-core.test.js` to these,
+   and the comment above `faceLayout`. Amend the 24 × 60 × 60 face row and
+   the matching contract lines in `docs/planning/solution-plan.md`.
+3. In `web/index.html`, `drawAnalogFace` no longer draws dots. Each hour
+   tick is drawn as a small rectangle in the hour hand's rose (`#cc79a7`)
+   with no stroke, pointing at the centre, in the band between the minute
+   ticks' outer ends (radius 90) and the face's edge (radius 98), touching
+   neither. They are drawn solid, not cut into the face plate's mask as
+   the minute ticks are, so they stay rose over night, longest-day and
+   today's daylight alike; and beneath the hands. Switching systems clears
+   them, as it redraws the minute ticks. The minor labels draw at
+   `CONFIG.radiusMinor` and `CONFIG.scaleMinor`, as the 48 clock's do.
+4. The turned 2 and 3 (the 48 clock's X and E) sit off the line of the
+   digits beside them: `renderNumber` turns the glyph 180° about its
+   text origin, which is not the middle of the digit's ink. Turn it about
+   the middle of the digit's ink instead, so a turned digit's top and
+   bottom are level with its neighbours' — in the readout and in the other
+   system's reading under it, in both systems and at every scale
+   `renderNumber` is called with.
+5. Make the 48 clock the default. In `web/index.html` the system drawn
+   when nothing is saved, and the fallback for a saved value that names no
+   system, become `48x48x48`; a saved choice is still honoured. Move the
+   `(default)` mark in `docs/planning/solution-plan.md` to the 48 clock's
+   row, and amend any line there that names the default. Bump `CACHE` in
+   `web/sw.js` to `daylight-clock-v4`.
+
+### Session 16: Release 1.2.0 (release: 1.2.0)
