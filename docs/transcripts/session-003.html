@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Session 003 transcript</title>
+<style>
+:root {
+  --page: #ffffff;
+  --ink: #1f1f1f;
+  --faint: #e4e4e4;
+  --panel: #f6f6f6;
+  --tone-milestone: #2a5db0;
+  --tone-good: #256029;
+  --tone-warn: #8a6100;
+  --tone-bad: #a31515;
+  --tone-muted: #6b6b6b;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --page: #1e1e1e;
+    --ink: #d4d4d4;
+    --faint: #3a3a3a;
+    --panel: #252526;
+  --tone-milestone: #3874db;
+  --tone-good: #54a33b;
+  --tone-warn: #b79427;
+  --tone-bad: #f14c4c;
+  --tone-muted: #8c8c8c;
+  }
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  padding: 24px 16px 64px;
+  background: var(--page);
+  color: var(--ink);
+  font: 14px/1.6 ui-sans-serif, system-ui, "Segoe UI", sans-serif;
+}
+main { max-width: 68rem; margin: 0 auto; }
+h1 { font-size: 1.4rem; margin: 0 0 .25rem; }
+h2 { font-size: 1.05rem; margin: 2.5rem 0 .75rem; border-bottom: 1px solid var(--faint); padding-bottom: .3rem; }
+.stamp { color: var(--tone-muted); font-size: .85rem; margin: 0 0 .25rem; }
+.mono, pre, code { font-family: ui-monospace, "Cascadia Mono", Consolas, monospace; }
+.lines { font-family: ui-monospace, "Cascadia Mono", Consolas, monospace; font-size: 13px; }
+.line { white-space: pre-wrap; word-break: break-word; padding-left: 10.5ch; text-indent: -10.5ch; }
+.at { color: var(--tone-muted); }
+table { border-collapse: collapse; width: 100%; font-size: 13px; }
+th, td { text-align: left; padding: .35rem .6rem; border-bottom: 1px solid var(--faint); vertical-align: top; }
+th { color: var(--tone-muted); font-weight: 600; }
+details { margin: .5rem 0; }
+summary { cursor: pointer; }
+td details { margin: 0; }
+tr:has(details:not([open])) + tr.findings { display: none; }
+tr.findings > td { padding: 0 0 .5rem 1.5rem; }
+pre { background: var(--panel); padding: .75rem; overflow-x: auto; white-space: pre-wrap; word-break: break-word; font-size: 12.5px; }
+.stop, .cancelled { border-left: 3px solid var(--tone-bad); background: var(--panel); padding: .6rem .9rem; }
+.milestone { color: var(--tone-milestone); }
+.good { color: var(--tone-good); }
+.warn { color: var(--tone-warn); }
+.bad { color: var(--tone-bad); }
+.muted { color: var(--tone-muted); }
+</style>
+</head>
+<body>
+<main>
+<h1>Session 003 transcript</h1>
+<p class="stamp">Rendered 2026-11-14T10:06:22.967Z by dabbler-ai-router 3.32.4 at 36d171d294678bd45ead6179f502358a0d8cb4f1.</p>
+<p class="stamp">Engine cli, last phase <span class="milestone">log</span>, started 2026-11-14T05:00:12.863-05:00.</p>
+<h2>Session Plan</h2>
+<h3>Session 3: Skeleton — import v3, the pure core and the test suite</h3>
+<ol><li>Register.</li><li>Copy <code>D:\quadi-dozenal-clock-v3.html</code> into <code>web/index.html</code> byte for byte, so the import changes no behaviour.</li><li>Create <code>web/clock-core.js</code> as a classic script that exposes <code>ClockCore</code> on <code>globalThis</code> and as <code>module.exports</code> under Node. It holds <code>secondsOfDay(date, tz)</code> and the v3 solar functions, moved out of the page unchanged in behaviour: <code>getSunTimes</code>, <code>getTimezoneOffset</code>, <code>utcMinutesToClockAngle</code>, <code>getSolarAngles</code>, <code>describeArc</code> and <code>spanDegrees</code>. <code>web/index.html</code> loads it before its own script and calls these through <code>ClockCore</code>; its 48-clock arithmetic stays inline for now. <code>tests/clock-core.test.js</code> pins each function to v3's output for a fixed date and city, checks the polar-night <code>null</code>, and checks <code>secondsOfDay</code> at a DST-change instant in <code>America/New_York</code>.</li><li>Declare the suite in <code>dabbler.yaml</code> under <code>testing.suites</code>: name <code>node</code>, command <code>node --test --test-timeout=60000 &quot;tests/**/*.test.js&quot;</code> (the timeout is the hang limit), <code>expensive: true</code> because its run is the run of record, <code>covers: [web, tests]</code>, <code>test_roots: [tests]</code> and <code>test_glob: &quot;*.test.js&quot;</code>. Add <code>tests/architecture.test.js</code>, which enforces the plan's two rules. First, <code>web/clock-core.js</code> names no <code>document</code>, <code>window</code>, <code>localStorage</code> or <code>navigator</code>. Second, no file under <code>web/</code> calls <code>fetch</code>, <code>XMLHttpRequest</code>, <code>WebSocket</code> or <code>EventSource</code>, except <code>sw.js</code>, which may only fill its own cache.</li></ol>
+<h2>Work Plan</h2>
+<p>Lay the skeleton of the daylight clock: import D:\quadi-dozenal-clock-v3.html byte for byte as web/index.html; move secondsOfDay(date, tz) (new) and the v3 solar functions getSunTimes, getTimezoneOffset, utcMinutesToClockAngle, getSolarAngles, describeArc and spanDegrees, unchanged in behaviour, into a DOM-free classic script web/clock-core.js that exposes ClockCore on globalThis and as module.exports under Node, and make index.html load it first and call those functions through ClockCore while its 48-clock arithmetic stays inline; pin the core with tests/clock-core.test.js (v3's outputs for a fixed date and city, the polar-night null, secondsOfDay at a DST change in America/New_York); and declare the node suite in dabbler.yaml under testing.suites with tests/architecture.test.js enforcing the plan's two rules (no DOM globals in clock-core.js; no network calls under web/ except sw.js filling its own cache).</p>
+<p>Landed <a href="https://github.com/darndestdabbler/dabbler-daylight-clock/commit/844287003ec82479fcfdaf4a7835728cc2e38c18"><code>844287003ec82479fcfdaf4a7835728cc2e38c18</code></a>.</p>
+<table>
+<tr><th>Step</th><th>Ask</th><th>Files</th><th>Checks</th><th>Accepted</th></tr>
+<tr><td>Import v3</td><td><p>Copy D:\quadi-dozenal-clock-v3.html into web/index.html byte for byte, with no edits, so the import changes no behaviour.</p></td><td><span class="mono">web/index.html</span></td><td><code>node -e const fs=require('fs');process.exit(fs.readFileSync('D:/quadi-dozenal-clock-v3.html').equals(fs.readFileSync('web/index.html'))?0:1)</code></td><td>yes</td></tr>
+<tr><td>Clock core</td><td><p>Create web/clock-core.js as a classic script (an IIFE) that exposes ClockCore on globalThis and, where module exists, as module.exports. It holds secondsOfDay(date, tz) -- the wall-clock seconds since midnight in tz at the instant date, in [0, 86400), read through Intl.DateTimeFormat parts -- and the v3 functions getSunTimes, getTimezoneOffset, utcMinutesToClockAngle, getSolarAngles, describeArc and spanDegrees moved verbatim from the page. In web/index.html, add &lt;script src=&quot;clock-core.js&quot;&gt;&lt;/script&gt; before the page script, delete the moved function definitions, and call them as ClockCore.&lt;name&gt;; the 48-clock arithmetic stays inline. Write tests/clock-core.test.js with node:test and node:assert: pin each function to v3's output for a fixed date and city (New York, 2025-06-21 12:00 UTC), check getSunTimes and getSolarAngles return null for polar night (e.g. lat 80 on the December solstice), and check secondsOfDay just before and after the 2025-03-09 spring-forward instant in America/New_York.</p></td><td><span class="mono">web/clock-core.js</span><br><span class="mono">web/index.html</span><br><span class="mono">tests/clock-core.test.js</span></td><td><code>node --test tests/clock-core.test.js</code><br><code>node -e const s=require('fs').readFileSync('web/index.html','utf8');const ok=s.indexOf('&lt;script src=&quot;clock-core.js&quot;&gt;&lt;/script&gt;')&gt;=0&amp;&amp;!/function (getSunTimes|getTimezoneOffset|utcMinutesToClockAngle|getSolarAngles|describeArc|spanDegrees)\b/.test(s);process.exit(ok?0:1)</code></td><td>yes</td></tr>
+<tr><td>Suite and architecture</td><td><p>Declare the suite in dabbler.yaml under testing.suites: name node, command node --test --test-timeout=60000 &quot;tests/**/*.test.js&quot;, expensive: true, covers: [web, tests], test_roots: [tests], test_glob: &quot;*.test.js&quot; (replacing the commented 'no suite is declared' note). Add tests/architecture.test.js, which reads the files as text and asserts: web/clock-core.js names no document, window, localStorage or navigator; no file under web/ calls fetch, XMLHttpRequest, WebSocket or EventSource, except web/sw.js, which may call only fetch, and only to fill its own cache.</p></td><td><span class="mono">dabbler.yaml</span><br><span class="mono">tests/architecture.test.js</span></td><td><code>node --test tests/architecture.test.js</code><br><code>node --test --test-timeout=60000 tests/**/*.test.js</code></td><td>yes</td></tr>
+</table>
+<p>Non-goals:</p>
+<ul><li>No SYSTEMS table, reading, handAngles, formatReading or faceLayout in the core, and no change to the 48-clock arithmetic in index.html (generateTicks, drawAnalogFace, updateClock) -- that is session 4.</li><li>No system selector, 24 x 60 x 60 face, zan-hand Z removal or other-system readout -- session 5.</li><li>No about.html, manifest, icons, sw.js or phone-width layout -- sessions 6 and 7.</li><li>No packaging: block in dabbler.yaml -- session 8.</li><li>No package.json, npm dependencies or build tooling: tests use Node's built-in runner only.</li></ul>
+<h2>What the framework said</h2>
+<div class="lines"><div class="line"><span class="at">[10:00:12]</span> <span class="muted">run-started</span> session=003 mode=pull</div>
+<div class="line"><span class="at">[10:00:12]</span> <span class="muted">instruction-issued</span> seq=1 kind=step step=plan</div>
+<div class="line"><span class="at">[10:01:13]</span> <span class="muted">run-resumed</span> session=003 phase=<span class="milestone">plan</span> mode=pull</div>
+<div class="line"><span class="at">[10:01:13]</span> <span class="muted">plan-accepted</span> steps=[&quot;import-v3&quot;,&quot;clock-core&quot;,&quot;suite-and-architecture&quot;] non_goals=5</div>
+<div class="line"><span class="at">[10:01:18]</span> <span class="milestone">phase</span> phase=<span class="milestone">work</span></div>
+<div class="line"><span class="at">[10:01:18]</span> <span class="muted">instruction-issued</span> seq=2 kind=step step=import-v3</div>
+<div class="line"><span class="at">[10:01:37]</span> <span class="muted">run-resumed</span> session=003 phase=<span class="milestone">work</span> mode=pull</div>
+<div class="line"><span class="at">[10:01:44]</span> <span class="muted">check-passed</span> step=import-v3 argv=[&quot;node&quot;,&quot;-e&quot;,&quot;const fs=require('fs');process.exit(fs.readFileSync('D:/quadi-dozenal-clock-v3.html').equals(fs.readFileSync('web/index.html'))?0:1)&quot;]</div>
+<div class="line"><span class="at">[10:01:46]</span> <span class="muted">report-accepted</span> seq=2 step=import-v3 files=[&quot;web/index.html&quot;] notes=Copied v3 page byte for byte into web/index.html</div>
+<div class="line"><span class="at">[10:01:46]</span> <span class="muted">instruction-issued</span> seq=3 kind=step step=clock-core</div>
+<div class="line"><span class="at">[10:03:51]</span> <span class="muted">run-resumed</span> session=003 phase=<span class="milestone">work</span> mode=pull</div>
+<div class="line"><span class="at">[10:03:58]</span> <span class="muted">check-passed</span> step=clock-core argv=[&quot;node&quot;,&quot;--test&quot;,&quot;tests/clock-core.test.js&quot;]</div>
+<div class="line"><span class="at">[10:03:58]</span> <span class="muted">check-passed</span> step=clock-core argv=[&quot;node&quot;,&quot;-e&quot;,&quot;const s=require('fs').readFileSync('web/index.html','utf8');const ok=s.indexOf('&lt;script src=\&quot;clock-core.js\&quot;&gt;&lt;/script&gt;')&gt;=0&amp;&amp;!/function (getSunTimes|getTimezoneOffset|utcMinutesToClockAngle|getSolarAngles|describeArc|spanDegrees)\\b/.test(s);process.exit(ok?0:1)&quot;]</div>
+<div class="line"><span class="at">[10:03:59]</span> <span class="muted">report-accepted</span> seq=3 step=clock-core files=[&quot;web/clock-core.js&quot;,&quot;web/index.html&quot;,&quot;tests/clock-core.test.js&quot;] notes=ClockCore holds secondsOfDay and the v3 solar functions; page loads it and calls through ClockCore; tests pin v3 outputs</div>
+<div class="line"><span class="at">[10:03:59]</span> <span class="muted">instruction-issued</span> seq=4 kind=step step=suite-and-architecture</div>
+<div class="line"><span class="at">[10:04:34]</span> <span class="muted">run-resumed</span> session=003 phase=<span class="milestone">work</span> mode=pull</div>
+<div class="line"><span class="at">[10:04:41]</span> <span class="muted">check-passed</span> step=suite-and-architecture argv=[&quot;node&quot;,&quot;--test&quot;,&quot;tests/architecture.test.js&quot;]</div>
+<div class="line"><span class="at">[10:04:41]</span> <span class="muted">check-passed</span> step=suite-and-architecture argv=[&quot;node&quot;,&quot;--test&quot;,&quot;--test-timeout=60000&quot;,&quot;tests/**/*.test.js&quot;]</div>
+<div class="line"><span class="at">[10:04:42]</span> <span class="muted">report-accepted</span> seq=4 step=suite-and-architecture files=[&quot;dabbler.yaml&quot;,&quot;tests/architecture.test.js&quot;] notes=Declared the node suite in dabbler.yaml; architecture test enforces no DOM globals in the core and no network calls under web/ except sw.js</div>
+<div class="line"><span class="at">[10:04:42]</span> <span class="milestone">phase</span> phase=<span class="milestone">preverify</span></div>
+<div class="line"><span class="at">[10:04:42]</span> <span class="milestone">phase</span> phase=<span class="milestone">verify</span></div>
+<div class="line"><span class="at">[10:04:45]</span> <span class="muted">job-started</span> name=verification pid=68192 log=.dabbler/runs/s3/driver/jobs/verification.log</div>
+<div class="line"><span class="at">[10:05:38]</span> <span class="muted">job-finished</span> name=verification exit=<span class="good">0</span> log=.dabbler/runs/s3/driver/jobs/verification.log</div>
+<div class="line"><span class="at">[10:05:38]</span> <span class="muted">verification-passed</span></div>
+<div class="line"><span class="at">[10:05:38]</span> <span class="milestone">phase</span> phase=<span class="milestone">run-of-record</span></div>
+<div class="line"><span class="at">[10:05:39]</span> <span class="muted">run-of-record</span> suite=node stage=final-full why=node declares no select command=node --test --test-timeout=60000 &quot;tests/**/*.test.js&quot;</div>
+<div class="line"><span class="at">[10:05:40]</span> <span class="muted">job-started</span> name=run of record: node pid=18488 log=.dabbler/runs/s3/driver/jobs/run-of-record-node.log</div>
+<div class="line"><span class="at">[10:05:46]</span> <span class="muted">job-finished</span> name=run of record: node exit=<span class="good">0</span> log=.dabbler/runs/s3/driver/jobs/run-of-record-node.log</div>
+<div class="line"><span class="at">[10:05:46]</span> <span class="milestone">phase</span> phase=<span class="milestone">land</span></div>
+<div class="line"><span class="at">[10:05:58]</span> <span class="muted">landed</span> commit=844287003ec82479fcfdaf4a7835728cc2e38c18</div>
+<div class="line"><span class="at">[10:05:58]</span> <span class="milestone">phase</span> phase=<span class="milestone">publish</span></div>
+<div class="line"><span class="at">[10:05:58]</span> <span class="muted">publish-skipped</span> reason=an ordinary session never publishes</div>
+<div class="line"><span class="at">[10:05:58]</span> <span class="milestone">phase</span> phase=<span class="milestone">close</span></div>
+<div class="line"><span class="at">[10:06:00]</span> <span class="muted">job-started</span> name=close pid=68896 log=.dabbler/runs/s3/driver/jobs/close.log</div>
+<div class="line"><span class="at">[10:06:22]</span> <span class="muted">job-finished</span> name=close exit=<span class="good">0</span> log=.dabbler/runs/s3/driver/jobs/close.log</div>
+<div class="line"><span class="at">[10:06:22]</span> <span class="milestone">phase</span> phase=<span class="milestone">log</span></div></div>
+<h2>Verification</h2>
+<table>
+<tr><th>Round</th><th>Phase</th><th>Verdict</th><th>Reviewer</th><th>Provider</th><th>Transport</th><th>Findings</th></tr>
+<tr><td>1</td><td>full</td><td><span class="good">VERIFIED</span></td><td>gpt-5.6-terra</td><td>openai</td><td>api</td><td><details><summary>1 finding</summary></details></td></tr><tr class="findings"><td colspan="7"><table>
+<tr><th>#</th><th>Severity</th><th>Finding</th><th>Response</th></tr>
+<tr><td>0</td><td><strong>minor</strong></td><td>**Nit:** `tests/architecture.test.js` does not fully enforce the permitted-service-worker restriction. With a future `web/sw.js` containing `fetch('/telemetry', { method: 'POST' })`, the architecture test should reject it because the fetch does not fill the service worker’s cache; today it passes because the `sw.js` branch only rejects alternate network APIs and absolute URLs. This is non-blocking because no `sw.js` currently exists and the shipped `web/` files contain no network call.</td><td>not answered</td></tr>
+</table></td></tr>
+</table>
+<h2>Test runs</h2>
+<table>
+<tr><th>Suite</th><th>Stage</th><th>Outcome</th><th>Duration</th><th>Passed</th><th>Failed</th><th>Skipped</th><th>Command</th></tr>
+<tr><td>node</td><td>final-full</td><td><span class="good">passed</span></td><td>2s</td><td>12</td><td>0</td><td>0</td><td><span class="mono">node --test --test-timeout=60000 &quot;tests/**/*.test.js&quot;</span></td></tr>
+</table>
+<h2>Jobs</h2>
+<div><strong>close</strong> exit <span class="good">0</span> <span class="muted">(passed -- output not carried; dabbler transcript --full carries it)</span></div>
+<div><strong>run-of-record-node</strong> exit <span class="good">0</span> <span class="muted">(passed -- output not carried; dabbler transcript --full carries it)</span></div>
+<div><strong>verification</strong> exit <span class="good">0</span> <span class="muted">(passed -- output not carried; dabbler transcript --full carries it)</span></div>
+</main>
+</body>
+</html>
