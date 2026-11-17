@@ -332,9 +332,9 @@
     {
       "number": 17,
       "title": "Turned digits level at every scale, and a new version takes over on reload",
-      "status": "in-progress",
+      "status": "complete",
       "startedAt": "2026-11-16T19:17:07.845000-05:00",
-      "completedAt": null,
+      "completedAt": "2026-11-16T19:21:58.356000-05:00",
       "orchestrator": {
         "engine": "claude-code",
         "provider": "anthropic",
