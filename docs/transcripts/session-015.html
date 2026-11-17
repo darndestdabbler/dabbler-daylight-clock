@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Session 015 transcript</title>
+<style>
+:root {
+  --page: #ffffff;
+  --ink: #1f1f1f;
+  --faint: #e4e4e4;
+  --panel: #f6f6f6;
+  --tone-milestone: #2a5db0;
+  --tone-good: #256029;
+  --tone-warn: #8a6100;
+  --tone-bad: #a31515;
+  --tone-muted: #6b6b6b;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --page: #1e1e1e;
+    --ink: #d4d4d4;
+    --faint: #3a3a3a;
+    --panel: #252526;
+  --tone-milestone: #3874db;
+  --tone-good: #54a33b;
+  --tone-warn: #b79427;
+  --tone-bad: #f14c4c;
+  --tone-muted: #8c8c8c;
+  }
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  padding: 24px 16px 64px;
+  background: var(--page);
+  color: var(--ink);
+  font: 14px/1.6 ui-sans-serif, system-ui, "Segoe UI", sans-serif;
+}
+main { max-width: 68rem; margin: 0 auto; }
+h1 { font-size: 1.4rem; margin: 0 0 .25rem; }
+h2 { font-size: 1.05rem; margin: 2.5rem 0 .75rem; border-bottom: 1px solid var(--faint); padding-bottom: .3rem; }
+.stamp { color: var(--tone-muted); font-size: .85rem; margin: 0 0 .25rem; }
+.mono, pre, code { font-family: ui-monospace, "Cascadia Mono", Consolas, monospace; }
+.lines { font-family: ui-monospace, "Cascadia Mono", Consolas, monospace; font-size: 13px; }
+.line { white-space: pre-wrap; word-break: break-word; padding-left: 10.5ch; text-indent: -10.5ch; }
+.at { color: var(--tone-muted); }
+table { border-collapse: collapse; width: 100%; font-size: 13px; }
+th, td { text-align: left; padding: .35rem .6rem; border-bottom: 1px solid var(--faint); vertical-align: top; }
+th { color: var(--tone-muted); font-weight: 600; }
+details { margin: .5rem 0; }
+summary { cursor: pointer; }
+td details { margin: 0; }
+tr:has(details:not([open])) + tr.findings { display: none; }
+tr.findings > td { padding: 0 0 .5rem 1.5rem; }
+pre { background: var(--panel); padding: .75rem; overflow-x: auto; white-space: pre-wrap; word-break: break-word; font-size: 12.5px; }
+.stop, .cancelled { border-left: 3px solid var(--tone-bad); background: var(--panel); padding: .6rem .9rem; }
+.milestone { color: var(--tone-milestone); }
+.good { color: var(--tone-good); }
+.warn { color: var(--tone-warn); }
+.bad { color: var(--tone-bad); }
+.muted { color: var(--tone-muted); }
+</style>
+</head>
+<body>
+<main>
+<h1>Session 015 transcript</h1>
+<p class="stamp">Rendered 2026-11-16T23:23:17.565Z by dabbler-ai-router 3.34.1 at 41c85482ae51a93f1c115f3ffca09eb0a3230c31.</p>
+<p class="stamp">Engine cli, last phase <span class="milestone">log</span>, started 2026-11-16T18:16:48.967-05:00.</p>
+<h2>Session Plan</h2>
+<h3>Session 15: Hour ticks at the edge, minor numbers, level turned digits, and the 48 clock by default</h3>
+<ol><li>Register.</li><li>Change <code>faceLayout(&quot;24x60x60&quot;)</code> in <code>web/clock-core.js</code>, and leave the 48 clock's ticks and labels as they are:</li></ol>
+<ul><li>the 60 minute ticks stay as they are, a major every 5;</li><li>labels <code>0</code>, <code>6</code>, <code>12</code> and <code>18</code> stay major, and <code>3</code>, <code>9</code>, <code>15</code> and <code>21</code> join them as minor labels (<code>major: false</code>) at their hours' angles (15° per hour) — eight labels, and no others;</li><li><code>dots</code> goes, from both systems' layouts. In its place is <code>hourTicks</code>: one <code>{ angle }</code> for each of the 24 hours, the labelled ones included, at 15° per hour. The 48 clock's <code>faceLayout</code> returns <code>hourTicks: []</code>. Update both <code>faceLayout</code> tests in <code>tests/clock-core.test.js</code> to these, and the comment above <code>faceLayout</code>. Amend the 24 × 60 × 60 face row and the matching contract lines in <code>docs/planning/solution-plan.md</code>.</li></ul>
+<ol><li>In <code>web/index.html</code>, <code>drawAnalogFace</code> no longer draws dots. Each hour tick is drawn as a small rectangle in the hour hand's rose (<code>#cc79a7</code>) with no stroke, pointing at the centre, in the band between the minute ticks' outer ends (radius 90) and the face's edge (radius 98), touching neither. They are drawn solid, not cut into the face plate's mask as the minute ticks are, so they stay rose over night, longest-day and today's daylight alike; and beneath the hands. Switching systems clears them, as it redraws the minute ticks. The minor labels draw at <code>CONFIG.radiusMinor</code> and <code>CONFIG.scaleMinor</code>, as the 48 clock's do.</li><li>The turned 2 and 3 (the 48 clock's X and E) sit off the line of the digits beside them: <code>renderNumber</code> turns the glyph 180° about its text origin, which is not the middle of the digit's ink. Turn it about the middle of the digit's ink instead, so a turned digit's top and bottom are level with its neighbours' — in the readout and in the other system's reading under it, in both systems and at every scale <code>renderNumber</code> is called with.</li><li>Make the 48 clock the default. In <code>web/index.html</code> the system drawn when nothing is saved, and the fallback for a saved value that names no system, become <code>48x48x48</code>; a saved choice is still honoured. Move the <code>(default)</code> mark in <code>docs/planning/solution-plan.md</code> to the 48 clock's row, and amend any line there that names the default. Bump <code>CACHE</code> in <code>web/sw.js</code> to <code>daylight-clock-v4</code>.</li></ol>
+<h2>Work Plan</h2>
+<p>Mark every hour on the 24 × 60 × 60 face, add its minor numbers, level the turned digits and make the 48 clock the default. In web/clock-core.js, faceLayout(&quot;24x60x60&quot;) keeps its 60 minute ticks (a major every 5) and labels 0, 6, 12 and 18 as majors, adds 3, 9, 15 and 21 as minor labels (major: false) at 15° per hour, and replaces dots with hourTicks: one { angle } per hour for all 24 hours; the 48 clock's faceLayout keeps its ticks and labels and returns hourTicks: [] in place of dots. Both faceLayout tests in tests/clock-core.test.js and the comment above faceLayout are updated to match. In web/index.html, drawAnalogFace stops drawing dots; each hour tick is drawn as a small solid rose (#cc79a7) rectangle with no stroke, pointing at the centre, in the band between radius 90 and radius 98 touching neither, in a group above the face plate and beneath the hands, cleared and redrawn when the system switches; minor labels draw at CONFIG.radiusMinor and CONFIG.scaleMinor as the 48 clock's do. renderNumber turns the turned 2 and 3 (X and E) 180° about the middle of the digit's ink, measured once from the glyph font, instead of its text origin, so they sit level with neighbouring digits at every scale. The system drawn when nothing is saved, and the fallback for an unknown saved value, become 48x48x48, while a saved choice is still honoured; CACHE in web/sw.js becomes daylight-clock-v4. docs/planning/solution-plan.md has its 24 × 60 × 60 face row, its faceLayout contract lines and its default marks amended to match.</p>
+<p>Landed <a href="https://github.com/darndestdabbler/dabbler-daylight-clock/commit/e30284c829b7562d0c0b8b85e6d44cf9e03e2f72"><code>e30284c829b7562d0c0b8b85e6d44cf9e03e2f72</code></a>.</p>
+<table>
+<tr><th>Step</th><th>Ask</th><th>Files</th><th>Checks</th><th>Accepted</th></tr>
+<tr><td>Core face layout</td><td><p>In web/clock-core.js change faceLayout(&quot;24x60x60&quot;): keep the 60 minute ticks; labels 0 6 12 18 major and 3 9 15 21 minor (major: false) at 15° per hour, eight labels in angle order; replace dots with hourTicks, one { angle: h * 15 } for each of the 24 hours. The 48 clock's layout returns hourTicks: [] in place of dots. Update the comment above faceLayout and both faceLayout tests in tests/clock-core.test.js.</p></td><td><span class="mono">web/clock-core.js</span><br><span class="mono">tests/clock-core.test.js</span></td><td><code>node --test tests/clock-core.test.js</code></td><td>yes</td></tr>
+<tr><td>Hour ticks drawn</td><td><p>In web/index.html, drawAnalogFace no longer draws dots, and minor labels already draw at CONFIG.radiusMinor and CONFIG.scaleMinor. Add a group with id hour-ticks after the face plate and before layer-hands; generateTicks clears it and draws each of faceLayout(system).hourTicks as a solid #cc79a7 rect with no stroke, rotated to its angle, spanning radially inside (90, 98) without touching either end, so it is cleared and redrawn on a system switch with the minute ticks.</p></td><td><span class="mono">web/index.html</span></td><td><code>node -e const fs=require('fs'),vm=require('vm');const h=fs.readFileSync('web/index.html','utf8');const s=[...h.matchAll(/&lt;script&gt;([\s\S]*?)&lt;\/script&gt;/g)].map(m=&gt;m[1]);if(!s.length)throw new Error('no inline script');s.forEach(x=&gt;new vm.Script(x));if(/\bdots?\b/.test(h))throw new Error('dots still drawn');if(!h.includes('hourTicks'))throw new Error('hourTicks not drawn');const g=h.indexOf('id=&quot;hour-ticks&quot;'),p=h.indexOf('mask=&quot;url(#mask-face-plate)&quot;'),n=h.indexOf('id=&quot;layer-hands&quot;');if(g&lt;0||!(p&lt;g&amp;&amp;g&lt;n))throw new Error('hour-ticks group not between face plate and hands');</code></td><td>yes</td></tr>
+<tr><td>Level turned digits</td><td><p>In web/index.html, renderNumber turns the X and E glyphs (turned 2 and 3) 180° about the vertical middle of the digit's ink rather than the text origin: measure the ink's middle once per turned glyph relative to the central baseline (canvas measureText with the glyphs' font and textBaseline 'middle', whose em-square middle is SVG's central baseline) and rotate about that point in glyph units, so the correction holds at every scale renderNumber is called with, in the readout and the other system's reading.</p></td><td><span class="mono">web/index.html</span></td><td><code>node -e const fs=require('fs'),vm=require('vm');const h=fs.readFileSync('web/index.html','utf8');const s=[...h.matchAll(/&lt;script&gt;([\s\S]*?)&lt;\/script&gt;/g)].map(m=&gt;m[1]);s.forEach(x=&gt;new vm.Script(x));if(/rotate\(' \+ glyphObj\.rotation \+ '\)/.test(h))throw new Error('turned glyph still rotates about its text origin');if(!h.includes('measureText'))throw new Error('ink middle not measured');</code></td><td>yes</td></tr>
+<tr><td>Default 48</td><td><p>In web/index.html make 48x48x48 the system drawn when nothing is saved and the fallback for a saved value naming no system (the initial <code>system</code>, setSystem's fallback and initSystem's default), keeping a saved choice honoured, and update the section comment that names the default. In web/sw.js bump CACHE to daylight-clock-v4.</p></td><td><span class="mono">web/index.html</span><br><span class="mono">web/sw.js</span></td><td><code>node -e const fs=require('fs');const h=fs.readFileSync('web/index.html','utf8');if(h.includes(&quot;'24x60x60'&quot;))throw new Error('24x60x60 still a default or fallback');if(!h.includes(&quot;let system = '48x48x48'&quot;))throw new Error('48 clock not the initial system');if(!fs.readFileSync('web/sw.js','utf8').includes(&quot;const CACHE = 'daylight-clock-v4'&quot;))throw new Error('CACHE not bumped');</code><br><code>node --test tests/sw.test.js</code></td><td>yes</td></tr>
+<tr><td>Plan doc</td><td><p>In docs/planning/solution-plan.md amend the 24 × 60 × 60 face row (labels 0 6 12 18 major and 3 9 15 21 minor, a rose hour tick at every hour at the face's edge, 60 minute ticks), the faceLayout contract lines (hourTicks in place of the dot list, empty for the 48 clock; the test expectation), move the (default) mark to the 48 clock's row, and amend the milestone line that names the 24 × 60 × 60 default.</p></td><td><span class="mono">docs/planning/solution-plan.md</span></td><td><code>node -e const d=require('fs').readFileSync('docs/planning/solution-plan.md','utf8');if(/\bdots?\b/.test(d))throw new Error('dots still described');if(!d.includes('hourTicks'))throw new Error('hourTicks not in the contract');if(!/\*\*48 \u00d7 48 \u00d7 48\*\* \(&quot;the 48 clock&quot;\) \(default\)/.test(d))throw new Error('48 clock row not marked default');if(/\*\*24 \u00d7 60 \u00d7 60\*\* \(default\)/.test(d)||/default\s+24 \u00d7 60/.test(d))throw new Error('24 x 60 x 60 still named the default');</code></td><td>yes</td></tr>
+</table>
+<p>Non-goals:</p>
+<ul><li>No change to the 48 clock's ticks, labels or drawing, beyond faceLayout returning hourTicks: [] for it in place of dots.</li><li>No change to the minute ticks' mask shapes, the hands, the readout layout, the solar wedges, the shortest-day marker or CONFIG values.</li><li>No new controls, storage keys or migration of a saved system choice: a saved choice is honoured as it is.</li><li>No release and no packaging change: release 1.2.0 is session 16's.</li></ul>
+<h2>What the framework said</h2>
+<div class="lines"><div class="line"><span class="at">[23:16:48]</span> <span class="muted">run-started</span> session=015 mode=pull</div>
+<div class="line"><span class="at">[23:16:49]</span> <span class="muted">instruction-issued</span> seq=1 kind=step step=plan</div>
+<div class="line"><span class="at">[23:18:39]</span> <span class="muted">run-resumed</span> session=015 phase=<span class="milestone">plan</span> mode=pull</div>
+<div class="line"><span class="at">[23:18:39]</span> <span class="muted">plan-accepted</span> steps=[&quot;core-face-layout&quot;,&quot;hour-ticks-drawn&quot;,&quot;level-turned-digits&quot;,&quot;default-48&quot;,&quot;plan-doc&quot;] non_goals=4</div>
+<div class="line"><span class="at">[23:18:40]</span> <span class="milestone">phase</span> phase=<span class="milestone">work</span></div>
+<div class="line"><span class="at">[23:18:40]</span> <span class="muted">instruction-issued</span> seq=2 kind=step step=core-face-layout</div>
+<div class="line"><span class="at">[23:19:18]</span> <span class="muted">run-resumed</span> session=015 phase=<span class="milestone">work</span> mode=pull</div>
+<div class="line"><span class="at">[23:19:20]</span> <span class="muted">check-passed</span> step=core-face-layout argv=[&quot;node&quot;,&quot;--test&quot;,&quot;tests/clock-core.test.js&quot;]</div>
+<div class="line"><span class="at">[23:19:20]</span> <span class="muted">report-accepted</span> seq=2 step=core-face-layout files=[&quot;web/clock-core.js&quot;,&quot;tests/clock-core.test.js&quot;] notes=faceLayout 24x60x60: labels 0 3 6 ... 21 (major every 6), hourTicks for all 24 hours; 48 clock hourTicks []; tests and comment updated</div>
+<div class="line"><span class="at">[23:19:20]</span> <span class="muted">instruction-issued</span> seq=3 kind=step step=hour-ticks-drawn</div>
+<div class="line"><span class="at">[23:19:57]</span> <span class="muted">run-resumed</span> session=015 phase=<span class="milestone">work</span> mode=pull</div>
+<div class="line"><span class="at">[23:19:59]</span> <span class="muted">check-passed</span> step=hour-ticks-drawn argv=[&quot;node&quot;,&quot;-e&quot;,&quot;const fs=require('fs'),vm=require('vm');const h=fs.readFileSync('web/index.html','utf8');const s=[...h.matchAll(/&lt;script&gt;([\\s\\S]*?)&lt;\\/script&gt;/g)].map(m=&gt;m[1]);if(!s.length)throw new Error('no inline script');s.forEach(x=&gt;new vm.Script(x));if(/\\bdots?\\b/.test(h))throw new Error('dots still drawn');if(!h.includes('hourTicks'))throw new Error('hourTicks not drawn');const g=h.indexOf('id=\&quot;hour-ticks\&quot;'),p=h.indexOf('mask=\&quot;url(#mask-face-plate)\&quot;'),n=h.indexOf('id=\&quot;layer-hands\&quot;');if(g&lt;0||!(p&lt;g&amp;&amp;g&lt;n))throw new Error('hour-ticks group not between face plate and hands');&quot;]</div>
+<div class="line"><span class="at">[23:19:59]</span> <span class="muted">report-accepted</span> seq=3 step=hour-ticks-drawn files=[&quot;web/index.html&quot;] notes=Dots removed; #tick-hour rect (radius 91-97, solid rose, no stroke) drawn per hourTicks into g#hour-ticks between face plate and hands, rebuilt by generateTicks</div>
+<div class="line"><span class="at">[23:19:59]</span> <span class="muted">instruction-issued</span> seq=4 kind=step step=level-turned-digits</div>
+<div class="line"><span class="at">[23:20:42]</span> <span class="muted">run-resumed</span> session=015 phase=<span class="milestone">work</span> mode=pull</div>
+<div class="line"><span class="at">[23:20:43]</span> <span class="muted">check-passed</span> step=level-turned-digits argv=[&quot;node&quot;,&quot;-e&quot;,&quot;const fs=require('fs'),vm=require('vm');const h=fs.readFileSync('web/index.html','utf8');const s=[...h.matchAll(/&lt;script&gt;([\\s\\S]*?)&lt;\\/script&gt;/g)].map(m=&gt;m[1]);s.forEach(x=&gt;new vm.Script(x));if(/rotate\\(' \\+ glyphObj\\.rotation \\+ '\\)/.test(h))throw new Error('turned glyph still rotates about its text origin');if(!h.includes('measureText'))throw new Error('ink middle not measured');&quot;]</div>
+<div class="line"><span class="at">[23:20:43]</span> <span class="muted">report-accepted</span> seq=4 step=level-turned-digits files=[&quot;web/index.html&quot;] notes=X/E rotate 180 about (0, inkMiddle) in glyph units; inkMiddle measured once per glyph with canvas measureText, textBaseline middle, glyph's computed font</div>
+<div class="line"><span class="at">[23:20:43]</span> <span class="muted">instruction-issued</span> seq=5 kind=step step=default-48</div>
+<div class="line"><span class="at">[23:21:12]</span> <span class="muted">run-resumed</span> session=015 phase=<span class="milestone">work</span> mode=pull</div>
+<div class="line"><span class="at">[23:21:14]</span> <span class="muted">check-passed</span> step=default-48 argv=[&quot;node&quot;,&quot;-e&quot;,&quot;const fs=require('fs');const h=fs.readFileSync('web/index.html','utf8');if(h.includes(\&quot;'24x60x60'\&quot;))throw new Error('24x60x60 still a default or fallback');if(!h.includes(\&quot;let system = '48x48x48'\&quot;))throw new Error('48 clock not the initial system');if(!fs.readFileSync('web/sw.js','utf8').includes(\&quot;const CACHE = 'daylight-clock-v4'\&quot;))throw new Error('CACHE not bumped');&quot;]</div>
+<div class="line"><span class="at">[23:21:14]</span> <span class="muted">check-passed</span> step=default-48 argv=[&quot;node&quot;,&quot;--test&quot;,&quot;tests/sw.test.js&quot;]</div>
+<div class="line"><span class="at">[23:21:14]</span> <span class="muted">report-accepted</span> seq=5 step=default-48 files=[&quot;web/index.html&quot;,&quot;web/sw.js&quot;] notes=Initial system, setSystem fallback and initSystem default are 48x48x48; saved choice still honoured; section comment updated; CACHE daylight-clock-v4</div>
+<div class="line"><span class="at">[23:21:14]</span> <span class="muted">instruction-issued</span> seq=6 kind=step step=plan-doc</div>
+<div class="line"><span class="at">[23:21:50]</span> <span class="muted">run-resumed</span> session=015 phase=<span class="milestone">work</span> mode=pull</div>
+<div class="line"><span class="at">[23:21:51]</span> <span class="muted">check-passed</span> step=plan-doc argv=[&quot;node&quot;,&quot;-e&quot;,&quot;const d=require('fs').readFileSync('docs/planning/solution-plan.md','utf8');if(/\\bdots?\\b/.test(d))throw new Error('dots still described');if(!d.includes('hourTicks'))throw new Error('hourTicks not in the contract');if(!/\\*\\*48 \\u00d7 48 \\u00d7 48\\*\\* \\(\&quot;the 48 clock\&quot;\\) \\(default\\)/.test(d))throw new Error('48 clock row not marked default');if(/\\*\\*24 \\u00d7 60 \\u00d7 60\\*\\* \\(default\\)/.test(d)||/default\\s+24 \\u00d7 60/.test(d))throw new Error('24 x 60 x 60 still named the default');&quot;]</div>
+<div class="line"><span class="at">[23:21:51]</span> <span class="muted">report-accepted</span> seq=6 step=plan-doc files=[&quot;docs/planning/solution-plan.md&quot;] notes=Face row, faceLayout contract (hourTicks), test expectation and milestone default line amended; (default) moved to the 48 clock row</div>
+<div class="line"><span class="at">[23:21:51]</span> <span class="milestone">phase</span> phase=<span class="milestone">preverify</span></div>
+<div class="line"><span class="at">[23:21:51]</span> <span class="milestone">phase</span> phase=<span class="milestone">verify</span></div>
+<div class="line"><span class="at">[23:21:52]</span> <span class="muted">job-started</span> name=verification pid=22492 log=.dabbler/runs/s15/driver/jobs/verification.log</div>
+<div class="line"><span class="at">[23:23:00]</span> <span class="muted">job-finished</span> name=verification exit=<span class="good">0</span> log=.dabbler/runs/s15/driver/jobs/verification.log</div>
+<div class="line"><span class="at">[23:23:00]</span> <span class="muted">verification-passed</span></div>
+<div class="line"><span class="at">[23:23:00]</span> <span class="milestone">phase</span> phase=<span class="milestone">run-of-record</span></div>
+<div class="line"><span class="at">[23:23:00]</span> <span class="muted">run-of-record</span> suite=node stage=final-full why=node declares no select command=node --test --test-timeout=60000 &quot;tests/**/*.test.js&quot;</div>
+<div class="line"><span class="at">[23:23:01]</span> <span class="muted">job-started</span> name=run of record: node pid=47772 log=.dabbler/runs/s15/driver/jobs/run-of-record-node.log</div>
+<div class="line"><span class="at">[23:23:04]</span> <span class="muted">job-finished</span> name=run of record: node exit=<span class="good">0</span> log=.dabbler/runs/s15/driver/jobs/run-of-record-node.log</div>
+<div class="line"><span class="at">[23:23:04]</span> <span class="milestone">phase</span> phase=<span class="milestone">land</span></div>
+<div class="line"><span class="at">[23:23:08]</span> <span class="muted">landed</span> commit=e30284c829b7562d0c0b8b85e6d44cf9e03e2f72</div>
+<div class="line"><span class="at">[23:23:08]</span> <span class="milestone">phase</span> phase=<span class="milestone">publish</span></div>
+<div class="line"><span class="at">[23:23:08]</span> <span class="muted">publish-skipped</span> reason=an ordinary session never publishes</div>
+<div class="line"><span class="at">[23:23:08]</span> <span class="milestone">phase</span> phase=<span class="milestone">close</span></div>
+<div class="line"><span class="at">[23:23:10]</span> <span class="muted">job-started</span> name=close pid=46264 log=.dabbler/runs/s15/driver/jobs/close.log</div>
+<div class="line"><span class="at">[23:23:17]</span> <span class="muted">job-finished</span> name=close exit=<span class="good">0</span> log=.dabbler/runs/s15/driver/jobs/close.log</div>
+<div class="line"><span class="at">[23:23:17]</span> <span class="milestone">phase</span> phase=<span class="milestone">log</span></div></div>
+<h2>Verification</h2>
+<table>
+<tr><th>Round</th><th>Phase</th><th>Verdict</th><th>Reviewer</th><th>Provider</th><th>Transport</th><th>Findings</th></tr>
+<tr><td>1</td><td>full</td><td><span class="good">VERIFIED</span></td><td>gpt-5.6-terra</td><td>openai</td><td>api</td><td>0</td></tr>
+</table>
+<h2>Test runs</h2>
+<table>
+<tr><th>Suite</th><th>Stage</th><th>Outcome</th><th>Duration</th><th>Passed</th><th>Failed</th><th>Skipped</th><th>Command</th></tr>
+<tr><td>node</td><td>final-full</td><td><span class="good">passed</span></td><td>1s</td><td>26</td><td>0</td><td>0</td><td><span class="mono">node --test --test-timeout=60000 &quot;tests/**/*.test.js&quot;</span></td></tr>
+</table>
+<h2>Jobs</h2>
+<div><strong>close</strong> exit <span class="good">0</span> <span class="muted">(passed -- output not carried; dabbler transcript --full carries it)</span></div>
+<div><strong>run-of-record-node</strong> exit <span class="good">0</span> <span class="muted">(passed -- output not carried; dabbler transcript --full carries it)</span></div>
+<div><strong>verification</strong> exit <span class="good">0</span> <span class="muted">(passed -- output not carried; dabbler transcript --full carries it)</span></div>
+</main>
+</body>
+</html>

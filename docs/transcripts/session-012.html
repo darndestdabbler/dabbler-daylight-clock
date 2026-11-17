@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Session 012 transcript</title>
+<style>
+:root {
+  --page: #ffffff;
+  --ink: #1f1f1f;
+  --faint: #e4e4e4;
+  --panel: #f6f6f6;
+  --tone-milestone: #2a5db0;
+  --tone-good: #256029;
+  --tone-warn: #8a6100;
+  --tone-bad: #a31515;
+  --tone-muted: #6b6b6b;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --page: #1e1e1e;
+    --ink: #d4d4d4;
+    --faint: #3a3a3a;
+    --panel: #252526;
+  --tone-milestone: #3874db;
+  --tone-good: #54a33b;
+  --tone-warn: #b79427;
+  --tone-bad: #f14c4c;
+  --tone-muted: #8c8c8c;
+  }
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  padding: 24px 16px 64px;
+  background: var(--page);
+  color: var(--ink);
+  font: 14px/1.6 ui-sans-serif, system-ui, "Segoe UI", sans-serif;
+}
+main { max-width: 68rem; margin: 0 auto; }
+h1 { font-size: 1.4rem; margin: 0 0 .25rem; }
+h2 { font-size: 1.05rem; margin: 2.5rem 0 .75rem; border-bottom: 1px solid var(--faint); padding-bottom: .3rem; }
+.stamp { color: var(--tone-muted); font-size: .85rem; margin: 0 0 .25rem; }
+.mono, pre, code { font-family: ui-monospace, "Cascadia Mono", Consolas, monospace; }
+.lines { font-family: ui-monospace, "Cascadia Mono", Consolas, monospace; font-size: 13px; }
+.line { white-space: pre-wrap; word-break: break-word; padding-left: 10.5ch; text-indent: -10.5ch; }
+.at { color: var(--tone-muted); }
+table { border-collapse: collapse; width: 100%; font-size: 13px; }
+th, td { text-align: left; padding: .35rem .6rem; border-bottom: 1px solid var(--faint); vertical-align: top; }
+th { color: var(--tone-muted); font-weight: 600; }
+details { margin: .5rem 0; }
+summary { cursor: pointer; }
+td details { margin: 0; }
+tr:has(details:not([open])) + tr.findings { display: none; }
+tr.findings > td { padding: 0 0 .5rem 1.5rem; }
+pre { background: var(--panel); padding: .75rem; overflow-x: auto; white-space: pre-wrap; word-break: break-word; font-size: 12.5px; }
+.stop, .cancelled { border-left: 3px solid var(--tone-bad); background: var(--panel); padding: .6rem .9rem; }
+.milestone { color: var(--tone-milestone); }
+.good { color: var(--tone-good); }
+.warn { color: var(--tone-warn); }
+.bad { color: var(--tone-bad); }
+.muted { color: var(--tone-muted); }
+</style>
+</head>
+<body>
+<main>
+<h1>Session 012 transcript</h1>
+<p class="stamp">Rendered 2026-11-16T10:14:14.219Z by dabbler-ai-router 3.34.0 at 0a46ee45a34c7ad87b9c852a8789d8503aa84331.</p>
+<p class="stamp">Engine cli, last phase <span class="milestone">log</span>, started 2026-11-16T05:08:13.610-05:00.</p>
+<h2>Session Plan</h2>
+<h3>Session 12: Location that never answers falls back</h3>
+<ol><li>Register.</li><li>On an iPhone (Chrome) the button stays on &quot;Requesting Location...&quot; and the debug panel shows only &quot;Requesting geolocation...&quot; — the browser never calls back, and each tap stacks another request. In <code>web/index.html</code>'s <code>toggleSolar</code>:</li></ol>
+<ul><li>pass <code>getCurrentPosition</code> the options <code>{ timeout: 10000, maximumAge: 600000 }</code>, so a request nobody answers ends in the error callback and the timezone fallback, as a refusal already does;</li><li>while a request is pending, a tap on the button starts no second one;</li><li>the error line in the debug panel carries the error's <code>code</code> as well as its <code>message</code>. Bump <code>CACHE</code> in <code>web/sw.js</code> to <code>daylight-clock-v2</code>. The step's check proves <code>index.html</code> passes a <code>timeout</code> to <code>getCurrentPosition</code>.</li></ul>
+<h2>Work Plan</h2>
+<p>Make the daylight toggle recover when the browser never answers a location request. In web/index.html's toggleSolar, getCurrentPosition is passed { timeout: 10000, maximumAge: 600000 }, so an unanswered request ends in the error callback and the existing timezone fallback, as a refusal already does; a flag set while a request is pending makes a further tap on the button start no second request, and both callbacks clear it; the debug panel's failure line carries the error's code as well as its message. CACHE in web/sw.js is bumped to daylight-clock-v2 so installed copies pick up the change.</p>
+<p>Landed <a href="https://github.com/darndestdabbler/dabbler-daylight-clock/commit/15c49e0400f32efe3fb86bda87c6ebccb8503260"><code>15c49e0400f32efe3fb86bda87c6ebccb8503260</code></a>.</p>
+<table>
+<tr><th>Step</th><th>Ask</th><th>Files</th><th>Checks</th><th>Accepted</th></tr>
+<tr><td>Location timeout</td><td><p>In web/index.html's toggleSolar, pass getCurrentPosition the options { timeout: 10000, maximumAge: 600000 }; keep a locationPending flag so a tap while a request is pending returns without starting another, clearing it in both the success and error callbacks; make the failure debug line include err.code alongside err.message. In web/sw.js change CACHE to 'daylight-clock-v2'.</p></td><td><span class="mono">web/index.html</span><br><span class="mono">web/sw.js</span></td><td><code>node -e const fs=require('fs');const t=fs.readFileSync('web/index.html','utf8');const s=fs.readFileSync('web/sw.js','utf8');const i=t.indexOf('getCurrentPosition(');const ok=i&gt;=0&amp;&amp;/timeout\s*:\s*\d+/.test(t.slice(i,i+2500))&amp;&amp;s.includes(&quot;const CACHE = 'daylight-clock-v2';&quot;);if(!ok){console.error('index.html passes no timeout to getCurrentPosition, or sw.js CACHE is not daylight-clock-v2');process.exit(1)}</code></td><td>yes</td></tr>
+</table>
+<p>Non-goals:</p>
+<ul><li>No change to the fallback location logic (guessFallbackLocation), the solar geometry or any other part of the clock face.</li><li>No new UI beyond the existing button text and debug panel: no spinner, toast or retry button.</li><li>No change to sw.js beyond the CACHE name, and no change to the test suite, dabbler.yaml or the Pages workflow.</li><li>No 24-hour face and no release: those are sessions 13 and 14.</li></ul>
+<h2>What the framework said</h2>
+<div class="lines"><div class="line"><span class="at">[10:08:13]</span> <span class="muted">run-started</span> session=012 mode=pull</div>
+<div class="line"><span class="at">[10:08:13]</span> <span class="muted">instruction-issued</span> seq=1 kind=step step=plan</div>
+<div class="line"><span class="at">[10:09:04]</span> <span class="muted">run-resumed</span> session=012 phase=<span class="milestone">plan</span> mode=pull</div>
+<div class="line"><span class="at">[10:09:04]</span> <span class="muted">plan-accepted</span> steps=[&quot;location-timeout&quot;] non_goals=4</div>
+<div class="line"><span class="at">[10:09:19]</span> <span class="milestone">phase</span> phase=<span class="milestone">work</span></div>
+<div class="line"><span class="at">[10:09:19]</span> <span class="muted">instruction-issued</span> seq=2 kind=step step=location-timeout</div>
+<div class="line"><span class="at">[10:10:13]</span> <span class="muted">run-resumed</span> session=012 phase=<span class="milestone">work</span> mode=pull</div>
+<div class="line"><span class="at">[10:10:22]</span> <span class="muted">check-passed</span> step=location-timeout argv=[&quot;node&quot;,&quot;-e&quot;,&quot;const fs=require('fs');const t=fs.readFileSync('web/index.html','utf8');const s=fs.readFileSync('web/sw.js','utf8');const i=t.indexOf('getCurrentPosition(');const ok=i&gt;=0&amp;&amp;/timeout\\s*:\\s*\\d+/.test(t.slice(i,i+2500))&amp;&amp;s.includes(\&quot;const CACHE = 'daylight-clock-v2';\&quot;);if(!ok){console.error('index.html passes no timeout to getCurrentPosition, or sw.js CACHE is not daylight-clock-v2');process.exit(1)}&quot;]</div>
+<div class="line"><span class="at">[10:10:31]</span> <span class="muted">report-accepted</span> seq=2 step=location-timeout files=[&quot;web/index.html&quot;,&quot;web/sw.js&quot;] notes=getCurrentPosition gets {timeout:10000,maximumAge:600000}; locationPending guards repeat taps, cleared in both callbacks; failure line shows err.code; CACHE bumped to daylight-clock-v2</div>
+<div class="line"><span class="at">[10:10:31]</span> <span class="milestone">phase</span> phase=<span class="milestone">preverify</span></div>
+<div class="line"><span class="at">[10:10:31]</span> <span class="milestone">phase</span> phase=<span class="milestone">verify</span></div>
+<div class="line"><span class="at">[10:10:41]</span> <span class="muted">job-started</span> name=verification pid=3972 log=.dabbler/runs/s12/driver/jobs/verification.log</div>
+<div class="line"><span class="at">[10:11:42]</span> <span class="muted">job-finished</span> name=verification exit=<span class="good">0</span> log=.dabbler/runs/s12/driver/jobs/verification.log</div>
+<div class="line"><span class="at">[10:11:42]</span> <span class="muted">verification-passed</span></div>
+<div class="line"><span class="at">[10:11:42]</span> <span class="milestone">phase</span> phase=<span class="milestone">run-of-record</span></div>
+<div class="line"><span class="at">[10:11:46]</span> <span class="muted">run-of-record</span> suite=node stage=final-full why=node declares no select command=node --test --test-timeout=60000 &quot;tests/**/*.test.js&quot;</div>
+<div class="line"><span class="at">[10:11:48]</span> <span class="muted">job-started</span> name=run of record: node pid=61176 log=.dabbler/runs/s12/driver/jobs/run-of-record-node.log</div>
+<div class="line"><span class="at">[10:12:10]</span> <span class="muted">job-finished</span> name=run of record: node exit=<span class="good">0</span> log=.dabbler/runs/s12/driver/jobs/run-of-record-node.log</div>
+<div class="line"><span class="at">[10:12:10]</span> <span class="milestone">phase</span> phase=<span class="milestone">land</span></div>
+<div class="line"><span class="at">[10:12:51]</span> <span class="muted">landed</span> commit=15c49e0400f32efe3fb86bda87c6ebccb8503260</div>
+<div class="line"><span class="at">[10:12:51]</span> <span class="milestone">phase</span> phase=<span class="milestone">publish</span></div>
+<div class="line"><span class="at">[10:12:54]</span> <span class="muted">publish-skipped</span> reason=an ordinary session never publishes</div>
+<div class="line"><span class="at">[10:12:54]</span> <span class="milestone">phase</span> phase=<span class="milestone">close</span></div>
+<div class="line"><span class="at">[10:13:05]</span> <span class="muted">job-started</span> name=close pid=40492 log=.dabbler/runs/s12/driver/jobs/close.log</div>
+<div class="line"><span class="at">[10:14:14]</span> <span class="muted">job-finished</span> name=close exit=<span class="good">0</span> log=.dabbler/runs/s12/driver/jobs/close.log</div>
+<div class="line"><span class="at">[10:14:14]</span> <span class="milestone">phase</span> phase=<span class="milestone">log</span></div></div>
+<h2>Verification</h2>
+<table>
+<tr><th>Round</th><th>Phase</th><th>Verdict</th><th>Reviewer</th><th>Provider</th><th>Transport</th><th>Findings</th></tr>
+<tr><td>1</td><td>full</td><td><span class="good">VERIFIED</span></td><td>gpt-5.6-terra</td><td>openai</td><td>api</td><td>0</td></tr>
+</table>
+<h2>Test runs</h2>
+<table>
+<tr><th>Suite</th><th>Stage</th><th>Outcome</th><th>Duration</th><th>Passed</th><th>Failed</th><th>Skipped</th><th>Command</th></tr>
+<tr><td>node</td><td>final-full</td><td><span class="good">passed</span></td><td>5s</td><td>26</td><td>0</td><td>0</td><td><span class="mono">node --test --test-timeout=60000 &quot;tests/**/*.test.js&quot;</span></td></tr>
+</table>
+<h2>Jobs</h2>
+<div><strong>close</strong> exit <span class="good">0</span> <span class="muted">(passed -- output not carried; dabbler transcript --full carries it)</span></div>
+<div><strong>run-of-record-node</strong> exit <span class="good">0</span> <span class="muted">(passed -- output not carried; dabbler transcript --full carries it)</span></div>
+<div><strong>verification</strong> exit <span class="good">0</span> <span class="muted">(passed -- output not carried; dabbler transcript --full carries it)</span></div>
+</main>
+</body>
+</html>
