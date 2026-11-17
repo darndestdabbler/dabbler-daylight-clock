@@ -359,3 +359,49 @@ starting with the skeleton session.
    choice is still honoured, and no storage key changes.
 
 ### Session 18: Release 1.2.1 (release: 1.2.1)
+
+### Session 19: The About page condensed, with dek and el, the dozenal societies and the clock in twelves
+
+1. Register.
+2. Rewrite `web/about.html` to the draft the person approved,
+   `docs/planning/about-draft.html`: the page becomes that file, word for
+   word and rule for rule. What the draft changes, and nothing else on the
+   page changes:
+   - the sections run in this order: About the clock, The 48 clock, What
+     the face shows, Why 48?, So why don't we use it?, The dozenal
+     societies, A clock in twelves;
+   - the existing sections are condensed to the draft's wording; the
+     separate "case for" paragraph and the list of 48's divisors go;
+   - ten and eleven are no longer written X and E. They are dek and el, a
+     `2` and a `3` in a `.turned` span turned 180° as the clock face turns
+     them, so no font has to carry ↊ and ↋. The class is exactly
+     `display: inline-block; transform-origin: center center;
+     transform: translateY(0.04em) rotate(180deg);`, with no font of its
+     own; each span keeps the draft's `role="img"` and `aria-label`;
+   - **The dozenal societies** is new: the Dozenal Society of America
+     (founded 1944) and the Dozenal Society of Great Britain (founded
+     1959), Isaac Pitman's turned digits, and a link to
+     `https://dozenal.org/`;
+   - **A clock in twelves** is new: the day divided by twelve five times
+     over (dwell 2 h, breather 10 min, trice 50 s, lull 4⅙ s, twinkling
+     about 0.35 s), a division that goes back to the American society's
+     founders in 1945, Paul Rapoport's iPhone clocks, a link to
+     `https://dozenal.org/dozenal-jottings.html` (the newsletter's index,
+     not the 86 MB PDF of the issue), and how the two clocks compare (a
+     dwell is exactly four dours).
+   The two links are plain `<a href>`s: the page still calls no server,
+   and `tests/architecture.test.js` stays as it is.
+3. Delete `docs/planning/about-draft.html`: the page is now the one copy.
+   Amend the two lines of `docs/planning/solution-plan.md` that say what
+   the About page covers (the **About** bullet and the *About page* item)
+   to name the dozenal societies and the clock in twelves as well. The
+   core's own `X` and `E` characters, and every line that names them,
+   stay as they are: only the About page's wording changes.
+4. Bump `CACHE` in `web/sw.js` to `daylight-clock-v6`, so the cached
+   About page is replaced, and update its test in `tests/sw.test.js`.
+5. The `0.04em` nudge is tuned by eye for Segoe UI, which only Windows
+   has. The person looks at the turned digits on a phone after the
+   release; a different nudge there is a later session's, not this one's.
+   Nothing under `web/` other than `about.html` and `sw.js` changes.
+
+### Session 20: Release 1.3.0 (release: 1.3.0)
