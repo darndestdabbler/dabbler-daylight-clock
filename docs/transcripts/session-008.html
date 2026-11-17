@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Session 008 transcript</title>
+<style>
+:root {
+  --page: #ffffff;
+  --ink: #1f1f1f;
+  --faint: #e4e4e4;
+  --panel: #f6f6f6;
+  --tone-milestone: #2a5db0;
+  --tone-good: #256029;
+  --tone-warn: #8a6100;
+  --tone-bad: #a31515;
+  --tone-muted: #6b6b6b;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --page: #1e1e1e;
+    --ink: #d4d4d4;
+    --faint: #3a3a3a;
+    --panel: #252526;
+  --tone-milestone: #3874db;
+  --tone-good: #54a33b;
+  --tone-warn: #b79427;
+  --tone-bad: #f14c4c;
+  --tone-muted: #8c8c8c;
+  }
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  padding: 24px 16px 64px;
+  background: var(--page);
+  color: var(--ink);
+  font: 14px/1.6 ui-sans-serif, system-ui, "Segoe UI", sans-serif;
+}
+main { max-width: 68rem; margin: 0 auto; }
+h1 { font-size: 1.4rem; margin: 0 0 .25rem; }
+h2 { font-size: 1.05rem; margin: 2.5rem 0 .75rem; border-bottom: 1px solid var(--faint); padding-bottom: .3rem; }
+.stamp { color: var(--tone-muted); font-size: .85rem; margin: 0 0 .25rem; }
+.mono, pre, code { font-family: ui-monospace, "Cascadia Mono", Consolas, monospace; }
+.lines { font-family: ui-monospace, "Cascadia Mono", Consolas, monospace; font-size: 13px; }
+.line { white-space: pre-wrap; word-break: break-word; padding-left: 10.5ch; text-indent: -10.5ch; }
+.at { color: var(--tone-muted); }
+table { border-collapse: collapse; width: 100%; font-size: 13px; }
+th, td { text-align: left; padding: .35rem .6rem; border-bottom: 1px solid var(--faint); vertical-align: top; }
+th { color: var(--tone-muted); font-weight: 600; }
+details { margin: .5rem 0; }
+summary { cursor: pointer; }
+td details { margin: 0; }
+tr:has(details:not([open])) + tr.findings { display: none; }
+tr.findings > td { padding: 0 0 .5rem 1.5rem; }
+pre { background: var(--panel); padding: .75rem; overflow-x: auto; white-space: pre-wrap; word-break: break-word; font-size: 12.5px; }
+.stop, .cancelled { border-left: 3px solid var(--tone-bad); background: var(--panel); padding: .6rem .9rem; }
+.milestone { color: var(--tone-milestone); }
+.good { color: var(--tone-good); }
+.warn { color: var(--tone-warn); }
+.bad { color: var(--tone-bad); }
+.muted { color: var(--tone-muted); }
+</style>
+</head>
+<body>
+<main>
+<h1>Session 008 transcript</h1>
+<p class="stamp">Rendered 2026-11-14T14:47:36.933Z by dabbler-ai-router 3.33.0 at 0a1856597a6df57b049c6f0f68ac98850ec411c4.</p>
+<p class="stamp">Engine cli, last phase <span class="milestone">log</span>, started 2026-11-14T09:39:03.102-05:00.</p>
+<h2>Session Plan</h2>
+<h3>Session 8: The installable app</h3>
+<ol><li>Register.</li><li>Add <code>web/manifest.webmanifest</code> and <code>web/icons/</code>: an <code>icon.svg</code> source and PNGs at 192 and 512 px, including a maskable 512. Link the manifest from <code>index.html</code> and <code>about.html</code>. Keep <code>start_url</code> and <code>scope</code> relative, so the site installs from any folder of a static host.</li><li>Add <code>web/sw.js</code>. It precaches every site file under a versioned cache name, serves cache-first and deletes older caches when it activates. <code>index.html</code> registers it only where <code>navigator.serviceWorker</code> exists and the page is not opened from <code>file:</code>. Add <code>tests/sw.test.js</code>, which checks that every path <code>sw.js</code> precaches exists under <code>web/</code>.</li><li>Lay out <code>web/index.html</code> and <code>web/about.html</code> for phone width: at 360 px wide, the face, readouts and controls fit without horizontal scrolling.</li></ol>
+<h2>Work Plan</h2>
+<p>Make the clock an installable, offline web app that fits a phone. Add web/manifest.webmanifest with relative start_url and scope, and web/icons/ holding an icon.svg source with PNGs rasterized from it at 192 and 512 px plus a maskable 512 px; link the manifest from index.html and about.html. Add web/sw.js, which precaches every site file under a versioned cache name, serves cache-first and deletes older caches on activate; index.html registers it only where navigator.serviceWorker exists and the page is not opened from file:. Add tests/sw.test.js, which reads the precache list out of sw.js and checks that every path in it exists under web/ (and that every file under web/ is in it). Finally lay out index.html and about.html so that at 360 px wide the face, readouts and controls fit without horizontal scrolling.</p>
+<p>Landed <a href="https://github.com/darndestdabbler/dabbler-daylight-clock/commit/4c7e0830498070987570ed9dfffb625071059eda"><code>4c7e0830498070987570ed9dfffb625071059eda</code></a>.</p>
+<table>
+<tr><th>Step</th><th>Ask</th><th>Files</th><th>Checks</th><th>Accepted</th></tr>
+<tr><td>Manifest icons</td><td><p>Add web/icons/icon.svg (a simple clock-face mark in the app's colours), the PNGs rasterized from it at 192 and 512 px and a maskable 512 px PNG with the mark inside the safe zone, and web/manifest.webmanifest naming the app, its colours, display standalone, relative start_url and scope ('./'), and those icons (the maskable one with purpose 'maskable'). Link the manifest from web/index.html and web/about.html with &lt;link rel=&quot;manifest&quot; href=&quot;manifest.webmanifest&quot;&gt;.</p></td><td><span class="mono">web/manifest.webmanifest</span><br><span class="mono">web/icons/icon.svg</span><br><span class="mono">web/icons/icon-192.png</span><br><span class="mono">web/icons/icon-512.png</span><br><span class="mono">web/icons/icon-maskable-512.png</span><br><span class="mono">web/index.html</span><br><span class="mono">web/about.html</span></td><td><code>node -e const fs=require('fs'),p=require('path'),a=require('assert');const m=JSON.parse(fs.readFileSync('web/manifest.webmanifest','utf8'));for(const k of ['start_url','scope'])a.ok(m[k]&amp;&amp;!/^(\/|[a-z]+:)/i.test(m[k]),k+' must be relative');const size=f=&gt;{const b=fs.readFileSync(p.join('web',f));a.equal(b.toString('latin1',1,4),'PNG',f);return b.readUInt32BE(16)+'x'+b.readUInt32BE(20)};const got=m.icons.map(i=&gt;(i.purpose||'any')+':'+(i.src.endsWith('.png')?size(i.src):i.sizes));for(const w of ['any:192x192','any:512x512','maskable:512x512'])a.ok(got.includes(w),'missing icon '+w+' in '+got);a.ok(fs.existsSync('web/icons/icon.svg'));for(const f of ['web/index.html','web/about.html'])a.match(fs.readFileSync(f,'utf8'),/&lt;link rel=&quot;manifest&quot; href=&quot;manifest.webmanifest&quot;&gt;/,f);</code><br><code>node --test tests/architecture.test.js</code></td><td>yes</td></tr>
+<tr><td>Service worker</td><td><p>Add web/sw.js: a versioned cache name, a FILES list of every site file (relative paths, './' for the folder itself), install precaches FILES, activate deletes every other cache, fetch answers cache-first and falls back to the network. In web/index.html register 'sw.js' only when 'serviceWorker' in navigator and location.protocol is not 'file:', swallowing a failed registration. Add tests/sw.test.js, which reads FILES out of sw.js as text and checks that every path in it exists under web/, and that every file under web/ is in it.</p></td><td><span class="mono">web/sw.js</span><br><span class="mono">web/index.html</span><br><span class="mono">tests/sw.test.js</span></td><td><code>node --test tests/sw.test.js tests/architecture.test.js</code></td><td>yes</td></tr>
+<tr><td>Phone layout</td><td><p>Lay out web/index.html and web/about.html for phone width: at 360 px wide the clock face, both readouts and the controls fit with no horizontal scrolling. In index.html size the clock card with box-sizing: border-box so its padding counts inside its width, and under a narrow-screen media query shrink its padding and radius and let the controls span the width; in about.html shrink the card's side padding and let the table scroll within itself if it must. Verify by rendering both pages at 360 px in a headless browser before reporting.</p></td><td><span class="mono">web/index.html</span><br><span class="mono">web/about.html</span></td><td><code>node -e const fs=require('fs'),a=require('assert');for(const f of ['web/index.html','web/about.html']){const s=fs.readFileSync(f,'utf8');a.match(s,/name=&quot;viewport&quot; content=&quot;width=device-width/,f);a.match(s,/@media \(max-width: *\d+px\)/,f+' has no narrow-screen rule');}a.match(fs.readFileSync('web/index.html','utf8'),/box-sizing: *border-box/,'index.html clock card must use border-box');</code><br><code>node --test tests/architecture.test.js tests/sw.test.js</code></td><td>yes</td></tr>
+</table>
+<p>Non-goals:</p>
+<ul><li>No build step, bundler, npm dependency or committed icon-generation script: the PNGs are generated once and committed as files.</li><li>No change to clock-core.js, to what the face draws or computes, or to the About page's text.</li><li>No packaging: block in dabbler.yaml and no release; packaging is a later session of the plan.</li><li>No runtime caching of anything outside the site's own files, no push notifications, background sync or update prompts in the service worker.</li></ul>
+<h2>What the framework said</h2>
+<div class="lines"><div class="line"><span class="at">[14:39:03]</span> <span class="muted">run-started</span> session=008 mode=pull</div>
+<div class="line"><span class="at">[14:39:03]</span> <span class="muted">instruction-issued</span> seq=1 kind=step step=plan</div>
+<div class="line"><span class="at">[14:40:33]</span> <span class="muted">run-resumed</span> session=008 phase=<span class="milestone">plan</span> mode=pull</div>
+<div class="line"><span class="at">[14:40:33]</span> <span class="muted">plan-accepted</span> steps=[&quot;manifest-icons&quot;,&quot;service-worker&quot;,&quot;phone-layout&quot;] non_goals=4</div>
+<div class="line"><span class="at">[14:40:37]</span> <span class="milestone">phase</span> phase=<span class="milestone">work</span></div>
+<div class="line"><span class="at">[14:40:37]</span> <span class="muted">instruction-issued</span> seq=2 kind=step step=manifest-icons</div>
+<div class="line"><span class="at">[14:42:05]</span> <span class="muted">run-resumed</span> session=008 phase=<span class="milestone">work</span> mode=pull</div>
+<div class="line"><span class="at">[14:42:11]</span> <span class="muted">check-passed</span> step=manifest-icons argv=[&quot;node&quot;,&quot;-e&quot;,&quot;const fs=require('fs'),p=require('path'),a=require('assert');const m=JSON.parse(fs.readFileSync('web/manifest.webmanifest','utf8'));for(const k of ['start_url','scope'])a.ok(m[k]&amp;&amp;!/^(\\/|[a-z]+:)/i.test(m[k]),k+' must be relative');const size=f=&gt;{const b=fs.readFileSync(p.join('web',f));a.equal(b.toString('latin1',1,4),'PNG',f);return b.readUInt32BE(16)+'x'+b.readUInt32BE(20)};const got=m.icons.map(i=&gt;(i.purpose||'any')+':'+(i.src.endsWith('.png')?size(i.src):i.sizes));for(const w of ['any:192x192','any:512x512','maskable:512x512'])a.ok(got.includes(w),'missing icon '+w+' in '+got);a.ok(fs.existsSync('web/icons/icon.svg'));for(const f of ['web/index.html','web/about.html'])a.match(fs.readFileSync(f,'utf8'),/&lt;link rel=\&quot;manifest\&quot; href=\&quot;manifest.webmanifest\&quot;&gt;/,f);&quot;]</div>
+<div class="line"><span class="at">[14:42:11]</span> <span class="muted">check-passed</span> step=manifest-icons argv=[&quot;node&quot;,&quot;--test&quot;,&quot;tests/architecture.test.js&quot;]</div>
+<div class="line"><span class="at">[14:42:12]</span> <span class="muted">report-accepted</span> seq=2 step=manifest-icons files=[&quot;web/manifest.webmanifest&quot;,&quot;web/icons/icon.svg&quot;,&quot;web/icons/icon-192.png&quot;,&quot;web/icons/icon-512.png&quot;,&quot;web/icons/icon-maskable-512.png&quot;,&quot;web/index.html&quot;,&quot;web/about.html&quot;] notes=Added icon.svg (clock mark with green/gold daylight rim), PNGs rasterized from it once with headless Edge (192, 512, maskable 512 at 80% on full-bleed bg), manifest with relative start_url/scope, linked from both pages.</div>
+<div class="line"><span class="at">[14:42:12]</span> <span class="muted">instruction-issued</span> seq=3 kind=step step=service-worker</div>
+<div class="line"><span class="at">[14:42:48]</span> <span class="muted">run-resumed</span> session=008 phase=<span class="milestone">work</span> mode=pull</div>
+<div class="line"><span class="at">[14:42:51]</span> <span class="muted">check-passed</span> step=service-worker argv=[&quot;node&quot;,&quot;--test&quot;,&quot;tests/sw.test.js&quot;,&quot;tests/architecture.test.js&quot;]</div>
+<div class="line"><span class="at">[14:42:52]</span> <span class="muted">report-accepted</span> seq=3 step=service-worker files=[&quot;web/sw.js&quot;,&quot;web/index.html&quot;,&quot;tests/sw.test.js&quot;] notes=sw.js precaches FILES under daylight-clock-v1, deletes other caches on activate, serves GETs cache-first; index.html registers it outside file: when supported; sw.test.js checks FILES against web/ both ways (sw.js itself excepted).</div>
+<div class="line"><span class="at">[14:42:52]</span> <span class="muted">instruction-issued</span> seq=4 kind=step step=phone-layout</div>
+<div class="line"><span class="at">[14:45:22]</span> <span class="muted">run-resumed</span> session=008 phase=<span class="milestone">work</span> mode=pull</div>
+<div class="line"><span class="at">[14:45:28]</span> <span class="muted">check-passed</span> step=phone-layout argv=[&quot;node&quot;,&quot;-e&quot;,&quot;const fs=require('fs'),a=require('assert');for(const f of ['web/index.html','web/about.html']){const s=fs.readFileSync(f,'utf8');a.match(s,/name=\&quot;viewport\&quot; content=\&quot;width=device-width/,f);a.match(s,/@media \\(max-width: *\\d+px\\)/,f+' has no narrow-screen rule');}a.match(fs.readFileSync('web/index.html','utf8'),/box-sizing: *border-box/,'index.html clock card must use border-box');&quot;]</div>
+<div class="line"><span class="at">[14:45:28]</span> <span class="muted">check-passed</span> step=phone-layout argv=[&quot;node&quot;,&quot;--test&quot;,&quot;tests/architecture.test.js&quot;,&quot;tests/sw.test.js&quot;]</div>
+<div class="line"><span class="at">[14:45:29]</span> <span class="muted">report-accepted</span> seq=4 step=phone-layout files=[&quot;web/index.html&quot;,&quot;web/about.html&quot;] notes=border-box clock card plus a max-width:480px rule (slimmer card, 90vw controls, wrapping debug panel, body padding) in index.html; slimmer padding and self-scrolling table in about.html. Verified in headless Chrome in a 360px iframe: scrollWidth 360 = clientWidth on both pages (index was 375 before).</div>
+<div class="line"><span class="at">[14:45:29]</span> <span class="milestone">phase</span> phase=<span class="milestone">preverify</span></div>
+<div class="line"><span class="at">[14:45:29]</span> <span class="milestone">phase</span> phase=<span class="milestone">verify</span></div>
+<div class="line"><span class="at">[14:45:30]</span> <span class="muted">job-started</span> name=verification pid=55120 log=.dabbler/runs/s8/driver/jobs/verification.log</div>
+<div class="line"><span class="at">[14:47:00]</span> <span class="muted">job-finished</span> name=verification exit=<span class="good">0</span> log=.dabbler/runs/s8/driver/jobs/verification.log</div>
+<div class="line"><span class="at">[14:47:00]</span> <span class="muted">verification-passed</span></div>
+<div class="line"><span class="at">[14:47:00]</span> <span class="milestone">phase</span> phase=<span class="milestone">run-of-record</span></div>
+<div class="line"><span class="at">[14:47:01]</span> <span class="muted">run-of-record</span> suite=node stage=final-full why=node declares no select command=node --test --test-timeout=60000 &quot;tests/**/*.test.js&quot;</div>
+<div class="line"><span class="at">[14:47:02]</span> <span class="muted">job-started</span> name=run of record: node pid=56992 log=.dabbler/runs/s8/driver/jobs/run-of-record-node.log</div>
+<div class="line"><span class="at">[14:47:07]</span> <span class="muted">job-finished</span> name=run of record: node exit=<span class="good">0</span> log=.dabbler/runs/s8/driver/jobs/run-of-record-node.log</div>
+<div class="line"><span class="at">[14:47:07]</span> <span class="milestone">phase</span> phase=<span class="milestone">land</span></div>
+<div class="line"><span class="at">[14:47:17]</span> <span class="muted">landed</span> commit=4c7e0830498070987570ed9dfffb625071059eda</div>
+<div class="line"><span class="at">[14:47:17]</span> <span class="milestone">phase</span> phase=<span class="milestone">publish</span></div>
+<div class="line"><span class="at">[14:47:18]</span> <span class="muted">publish-skipped</span> reason=an ordinary session never publishes</div>
+<div class="line"><span class="at">[14:47:18]</span> <span class="milestone">phase</span> phase=<span class="milestone">close</span></div>
+<div class="line"><span class="at">[14:47:20]</span> <span class="muted">job-started</span> name=close pid=58132 log=.dabbler/runs/s8/driver/jobs/close.log</div>
+<div class="line"><span class="at">[14:47:36]</span> <span class="muted">job-finished</span> name=close exit=<span class="good">0</span> log=.dabbler/runs/s8/driver/jobs/close.log</div>
+<div class="line"><span class="at">[14:47:36]</span> <span class="milestone">phase</span> phase=<span class="milestone">log</span></div></div>
+<h2>Verification</h2>
+<table>
+<tr><th>Round</th><th>Phase</th><th>Verdict</th><th>Reviewer</th><th>Provider</th><th>Transport</th><th>Findings</th></tr>
+<tr><td>1</td><td>full</td><td><span class="good">VERIFIED</span></td><td>gpt-5.6-terra</td><td>openai</td><td>api</td><td><details><summary>8 findings</summary></details></td></tr><tr class="findings"><td colspan="7"><table>
+<tr><th>#</th><th>Severity</th><th>Finding</th><th>Response</th></tr>
+<tr><td>0</td><td><strong>minor</strong></td><td>**Nit:** `sw.js` is not in the precache list, despite the work plan saying the worker “precaches every site file” and that the test checks “every file under `web/` is in it.”</td><td>not answered</td></tr>
+<tr><td>1</td><td><strong>minor</strong></td><td>**Evidence:** `web/sw.js`, `tests/sw.test.js`</td><td>not answered</td></tr>
+<tr><td>2</td><td><strong>minor</strong></td><td>**Case to add:** With the current `FILES` list, which omits `sw.js`, run `node --test tests/sw.test.js`; the expectation for the stated all-files invariant is a failing assertion identifying `sw.js` as absent. Today it passes because `tests/sw.test.js` explicitly exempts it via `if (file !== 'sw.js')`.</td><td>not answered</td></tr>
+<tr><td>3</td><td><strong>minor</strong></td><td>The active service worker remains browser-managed, so this is unlikely to impair normal offline use, but the test does not enforce the claimed complete-inventory contract.</td><td>not answered</td></tr>
+<tr><td>4</td><td><strong>minor</strong></td><td>**Nit:** Activation deletes every Cache Storage cache on the origin except `daylight-clock-v1`, not merely this app’s older caches.</td><td>not answered</td></tr>
+<tr><td>5</td><td><strong>minor</strong></td><td>**Evidence:** `web/sw.js`</td><td>not answered</td></tr>
+<tr><td>6</td><td><strong>minor</strong></td><td>**Case to add:** With Cache Storage containing `daylight-clock-v0` and an unrelated same-origin cache such as `other-app-v3`, dispatch the `activate` handler; the expectation is that `daylight-clock-v0` is deleted while `other-app-v3` remains. Today both are deleted by `names.filter((name) =&gt; name !== CACHE)`.</td><td>not answered</td></tr>
+<tr><td>7</td><td><strong>minor</strong></td><td>This affects deployments sharing an origin with another cache-using app, an uncommon configuration, but cache cleanup should normally filter this application’s cache-name prefix.</td><td>not answered</td></tr>
+</table></td></tr>
+</table>
+<h2>Test runs</h2>
+<table>
+<tr><th>Suite</th><th>Stage</th><th>Outcome</th><th>Duration</th><th>Passed</th><th>Failed</th><th>Skipped</th><th>Command</th></tr>
+<tr><td>node</td><td>final-full</td><td><span class="good">passed</span></td><td>3s</td><td>26</td><td>0</td><td>0</td><td><span class="mono">node --test --test-timeout=60000 &quot;tests/**/*.test.js&quot;</span></td></tr>
+</table>
+<h2>Jobs</h2>
+<div><strong>close</strong> exit <span class="good">0</span> <span class="muted">(passed -- output not carried; dabbler transcript --full carries it)</span></div>
+<div><strong>run-of-record-node</strong> exit <span class="good">0</span> <span class="muted">(passed -- output not carried; dabbler transcript --full carries it)</span></div>
+<div><strong>verification</strong> exit <span class="good">0</span> <span class="muted">(passed -- output not carried; dabbler transcript --full carries it)</span></div>
+</main>
+</body>
+</html>
