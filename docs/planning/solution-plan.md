@@ -31,7 +31,8 @@ Done means:
   clock), replacing today's 12-hour line;
 - an **About** page, reachable from the clock, explains the 48 clock, asks
   why we don't use it, and explains the gold daylight wedge (today), the
-  green wedge (the longest day) and the blue shortest-day markers;
+  green wedge (the longest day) and the blue shortest-day markers, and tells
+  of the dozenal societies and the clock in twelves;
 - everything the v3 page does keeps working: daylight wedges, timezone
   choice, solstice/equinox date override, light/dark/auto theme;
 - the app installs to a phone's home screen and opens offline.
@@ -161,7 +162,8 @@ sessions.
    - `web/about.html`, linked from the clock, in the clock's theme: what
      the 48 clock is (dour, zan, mec and their lengths; 48 = 2⁴ × 3 and its
      many even divisions), why we might — or might not — use it, and what
-     the gold, green and blue markings on the face mean.
+     the gold, green and blue markings on the face mean; then
+     the dozenal societies and the clock in twelves.
 4. **Installable app** (1–2 sessions)
    - `manifest.webmanifest`, icons, and a service worker `sw.js` that
      caches the site for offline use; phone-width layout checked.

@@ -54,7 +54,7 @@ test('fetch answers from the cache first', () => {
     assert.match(handler('fetch'), /caches\.match\(event\.request\)\.then\(\(hit\) => hit \|\| fetch\(event\.request\)\)/);
 });
 
-test('CACHE is daylight-clock-v5', () => {
+test('CACHE is daylight-clock-v6', () => {
     const src = fs.readFileSync(path.join(WEB, 'sw.js'), 'utf8');
-    assert.match(src, /const CACHE = 'daylight-clock-v5';/);
+    assert.match(src, /const CACHE = 'daylight-clock-v6';/);
 });

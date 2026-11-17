@@ -85,6 +85,15 @@
         }
         .muted { color: var(--muted); }
 
+        /* Dek and el: a 2 and a 3 turned upside down, as on the clock face,
+           so they never depend on a font that carries the characters. The
+           nudge sits the turned digit on the line of the text in Segoe UI. */
+        .turned {
+            display: inline-block;
+            transform-origin: center center;
+            transform: translateY(0.04em) rotate(180deg);
+        }
+
         /* Phone width: slimmer side padding, and a table too wide scrolls by itself */
         @media (max-width: 480px) {
             body { padding: 16px 8px; }
@@ -99,16 +108,15 @@
 
     <h1>About the clock</h1>
 
-    <p>This clock tells the time of day two ways: the familiar
-    24&nbsp;×&nbsp;60&nbsp;×&nbsp;60 (hours, minutes, seconds), and the
-    48&nbsp;×&nbsp;48&nbsp;×&nbsp;48 clock described here. Either way, the
-    short hand goes round once a day, midnight at the top and noon at the
-    bottom, so the face can show where the daylight falls.</p>
+    <p>This clock tells the time two ways: the familiar
+    24&nbsp;×&nbsp;60&nbsp;×&nbsp;60, and the 48&nbsp;×&nbsp;48&nbsp;×&nbsp;48
+    clock described here. Either way, the short hand goes round once a day,
+    midnight at the top and noon at the bottom, so the face can show where
+    the daylight falls.</p>
 
     <h2>The 48 clock</h2>
 
-    <p>The day is divided by 48, and each part by 48 again, three times
-    over:</p>
+    <p>The day is divided by 48, three times over:</p>
 
     <table>
         <tr><th><span class="swatch" style="background: var(--dour)"></span>dour</th><td>1/48 of a day</td><td>30 min</td></tr>
@@ -116,64 +124,89 @@
         <tr><th><span class="swatch" style="background: var(--mec)"></span>mec</th><td>1/48 of a zan</td><td>0.78125 s</td></tr>
     </table>
 
-    <p>A day is 48 dours, 2,304 zans or 110,592 mecs. The readout writes
-    each unit with two dozenal (base-12) digits, where X is ten and E is
-    eleven, so each one runs from 00 to 3E (forty-seven). Noon is
-    20:00:00.</p>
-
-    <h2>Why 48?</h2>
-
-    <p>48 = 2⁴ × 3, and that makes it easy to cut up. It halves cleanly four
-    times (48, 24, 12, 6, 3), and it splits into thirds as well, so half,
-    a third, a quarter, a sixth, an eighth, a twelfth, a sixteenth and a
-    twenty-fourth of it are all whole numbers. Ten numbers divide 48
-    evenly: 1, 2, 3, 4, 6, 8, 12, 16, 24 and 48.</p>
-
-    <p>It also uses the same 48 at every level, where our clock switches
-    from 24 to 60, so the hands and the readout all work the same way. And
-    a dour is exactly half an hour, so it lines up with the clock we
-    already have at every half hour, and with nearly every time zone.</p>
-
-    <h2>So why don't we use it?</h2>
-
-    <p><strong>The case for:</strong> one rule all the way down instead of
-    two; a day that halves, quarters and thirds into whole dours (a quarter
-    of the day is 12 dours, a third is 16); a mec close enough to a second
-    to count by; and a dour that converts to half-hours without
-    arithmetic.</p>
-
-    <p><strong>The case against:</strong> the world already runs on
-    24 × 60 × 60. Every clock, timetable, contract and law is written in
-    hours and minutes, and the second is the unit science measures
-    everything else by, so a new day would have to be converted at every
-    border with the old one. A zan of 37.5 seconds and a mec of 0.78125
-    seconds never come out even against the second. 48 has no fifths or
-    tenths, which 60 has, and reading the time in dozenal digits is a
-    second new habit on top of the first. France tried decimal time in
-    1793 and gave it up within two years; habit is the strongest argument
-    of all.</p>
-
-    <p class="muted">So the 48 clock is offered here as something to look
-    at the day through, not a replacement for the one on the wall.</p>
+    <p>The readout writes each unit as two dozenal (base-12) digits, where
+    <span class="turned" role="img" aria-label="turned two">2</span> (dek) is
+    ten and <span class="turned" role="img" aria-label="turned three">3</span>
+    (el) is eleven, so each runs from 00 to
+    3<span class="turned" role="img" aria-label="el">3</span> (forty-seven).
+    Noon is 20:00:00.</p>
 
     <h2>What the face shows</h2>
 
     <p><span class="swatch" style="background: var(--daylight-today)"></span><strong>The
-    gold wedge</strong> is today's daylight: it runs from sunrise to
-    sunset where you are.</p>
+    gold wedge</strong> is today's daylight, from sunrise to sunset where
+    you are.</p>
 
     <p><span class="swatch" style="background: var(--daylight-longest)"></span><strong>The
-    green wedge</strong>, behind the gold, is the daylight of the
-    longest day of the year, so the green showing past the gold is the daylight
-    today is still short of the most there is.</p>
+    green wedge</strong>, behind the gold, is the daylight of the longest
+    day of the year, so the green showing past the gold is the daylight
+    today is still short of.</p>
 
     <p><span class="swatch" style="background: var(--shortest-marker)"></span><strong>The
-    blue markers</strong> are lines across the rim, with a pointer outside
-    the dial, at sunrise and sunset on the shortest day of the year: the
-    least daylight there ever is.</p>
+    blue markers</strong> on the rim are sunrise and sunset on the shortest
+    day of the year.</p>
 
     <p>Black around the rim is the part of the day that is never in
     daylight on any day of the year.</p>
+
+    <h2>Why 48?</h2>
+
+    <p>48 = 2⁴ × 3, so it cuts up easily: it halves cleanly four times and
+    splits into thirds as well. The same 48 serves at every level, where our
+    clock switches from 24 to 60. And a dour is exactly half an hour, so it
+    lines up with the clock we already have, and with nearly every time
+    zone.</p>
+
+    <h2>So why don't we use it?</h2>
+
+    <p>The world already runs on 24 × 60 × 60, and the second is the unit
+    science measures everything else by. Zans and mecs never come out even
+    against it, 48 has no fifths or tenths, and dozenal digits are a second
+    new habit on top of the first. France tried decimal time in 1793 and
+    gave it up within two years.</p>
+
+    <p class="muted">So the 48 clock is offered here as something to look
+    at the day through, not a replacement for the one on the wall.</p>
+
+    <h2>The dozenal societies</h2>
+
+    <p>Counting in twelves has had organized advocates for a long time. The
+    Dozenal Society of America, founded in 1944, and the Dozenal Society of
+    Great Britain, founded in 1959, have spent decades researching and
+    teaching base twelve in arithmetic, in weights and measures and in
+    timekeeping. The digits
+    <span class="turned" role="img" aria-label="dek">2</span> and
+    <span class="turned" role="img" aria-label="el">3</span> come from that
+    tradition: Isaac Pitman devised them, and the societies have long used
+    them. Their work is at
+    <a href="https://dozenal.org/">dozenal.org</a>.</p>
+
+    <h2>A clock in twelves</h2>
+
+    <p>The societies' own way of dividing the day is by twelve, five times
+    over, which makes the time a single dozenal number with one digit for
+    each unit:</p>
+
+    <table>
+        <tr><th>dwell</th><td>1/12 of a day</td><td>2 h</td></tr>
+        <tr><th>breather</th><td>1/12 of a dwell</td><td>10 min</td></tr>
+        <tr><th>trice</th><td>1/12 of a breather</td><td>50 s</td></tr>
+        <tr><th>lull</th><td>1/12 of a trice</td><td>4⅙ s</td></tr>
+        <tr><th>twinkling</th><td>1/12 of a lull</td><td>about 0.35 s</td></tr>
+    </table>
+
+    <p>The division goes back to the American society's founders in 1945;
+    these unit names are newer. Paul Rapoport, a member of its board, has
+    built it into a set of iPhone clocks, described in the second issue of
+    the society's newsletter,
+    <a href="https://dozenal.org/dozenal-jottings.html">Dozenal Jottings</a>.
+    His analog face also sends its short hand round once a day, and noon
+    reads 600.</p>
+
+    <p>The two clocks fit together: a dwell is exactly four dours. The
+    twelve clock needs only one digit for each unit. The 48 clock takes two,
+    and in exchange gets three units instead of five, with one that lands on
+    every half hour.</p>
 
     <a class="back" href="index.html">&larr; Back to the clock</a>
 </main>

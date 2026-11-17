@@ -2,7 +2,7 @@
 // CACHE when any file changes, so the next visit installs the new set and
 // activate clears the old one. A new version skips waiting and claims the
 // open pages, so the next reload shows it without closing every window.
-const CACHE = 'daylight-clock-v5';
+const CACHE = 'daylight-clock-v6';
 
 const FILES = [
     './',

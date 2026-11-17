@@ -30,6 +30,8 @@ The numbered sessions are declared from `session-plan.md`; each one's task is wh
 | 16 | Release 1.2.0 (release: 1.2.0) | yes | 2026-11-16 |
 | 17 | Turned digits level at every scale, and a new version takes over on reload | no | 2026-11-16 |
 | 18 | Release 1.2.1 (release: 1.2.1) | yes | 2026-11-16 |
+| 19 | The About page condensed, with dek and el, the dozenal societies and the clock in twelves | no | 2026-11-17 |
+| 20 | Release 1.3.0 (release: 1.3.0) | — | not declared |
 
 ### Session 1 — Author or import the solution plan
 
@@ -138,3 +140,9 @@ Level the 48 clock's turned digits at every scale and let a new version take ove
 **Releasable: yes.**
 
 Release 1.2.1: the framework packs and publishes what is on the trunk.
+
+### Session 19 — The About page condensed, with dek and el, the dozenal societies and the clock in twelves
+
+**Releasable: no.**
+
+Replace web/about.html with the approved draft docs/planning/about-draft.html, word for word: the condensed sections in the draft's order, dek and el written as a 2 and a 3 in a .turned span rotated 180 degrees (no font of its own, each with its role="img" and aria-label), and the two new sections, The dozenal societies (linking https://dozenal.org/) and A clock in twelves (linking https://dozenal.org/dozenal-jottings.html), both as plain <a href> links. Then delete the draft, amend the About bullet and the About page item of docs/planning/solution-plan.md to name the dozenal societies and the clock in twelves, and bump CACHE in web/sw.js to daylight-clock-v6 with its test in tests/sw.test.js.
