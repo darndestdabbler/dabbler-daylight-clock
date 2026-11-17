@@ -1,7 +1,8 @@
 // The offline cache: every site file, kept under a versioned name. Change
 // CACHE when any file changes, so the next visit installs the new set and
-// activate clears the old one.
-const CACHE = 'daylight-clock-v4';
+// activate clears the old one. A new version skips waiting and claims the
+// open pages, so the next reload shows it without closing every window.
+const CACHE = 'daylight-clock-v5';
 
 const FILES = [
     './',
@@ -16,12 +17,14 @@ const FILES = [
 ];
 
 self.addEventListener('install', (event) => {
+    self.skipWaiting();
     event.waitUntil(caches.open(CACHE).then((cache) => cache.addAll(FILES)));
 });
 
 self.addEventListener('activate', (event) => {
     event.waitUntil(caches.keys().then((names) =>
-        Promise.all(names.filter((name) => name !== CACHE).map((name) => caches.delete(name)))));
+        Promise.all(names.filter((name) => name !== CACHE).map((name) => caches.delete(name))))
+        .then(() => self.clients.claim()));
 });
 
 self.addEventListener('fetch', (event) => {

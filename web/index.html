@@ -710,19 +710,40 @@
     // ===========================================
     document.querySelectorAll("defs text").forEach(function(t) { t.setAttribute("font-size", "14"); });
 
-    // The middle of a glyph's ink, in glyph units below its central baseline
-    // (canvas's 'middle' is the same em-square middle), measured once. A
-    // turned digit turns about it, so its top and bottom stay level.
+    // The middle of a glyph's ink, in glyph units below the central baseline
+    // it is drawn on, measured once. A turned digit turns about it, so its
+    // top and bottom stay level. Canvas measures the ink from the alphabetic
+    // baseline (its 'middle' is not SVG's central), and the SVG itself says
+    // how far below central that baseline lies: two hidden probes of the
+    // glyph, one on each baseline, differ in getBBox().y by exactly that.
+    // Both are measured at MAGNIFY times the glyph's size and scaled back,
+    // since at the glyph's own size browsers round them to whole units.
     var inkMiddles = {};
+    var MAGNIFY = 100;
     function inkMiddle(refId) {
         if (!(refId in inkMiddles)) {
             var glyph = document.getElementById(refId);
+            var svg = document.getElementById('main-svg');
             var style = getComputedStyle(glyph);
+            var size = parseFloat(style.fontSize) * MAGNIFY;
+            function probeTop(baseline) {
+                var probe = glyph.cloneNode(true);
+                probe.removeAttribute('id');
+                probe.setAttribute('font-size', size);
+                probe.setAttribute('dominant-baseline', baseline);
+                probe.setAttribute('visibility', 'hidden');
+                svg.appendChild(probe);
+                var top = probe.getBBox().y;
+                svg.removeChild(probe);
+                return top;
+            }
+            var alphabeticBelowCentral = probeTop('central') - probeTop('alphabetic');
             var ctx = document.createElement('canvas').getContext('2d');
-            ctx.font = style.fontWeight + ' ' + style.fontSize + ' ' + style.fontFamily;
-            ctx.textBaseline = 'middle';
+            ctx.font = style.fontWeight + ' ' + size + 'px ' + style.fontFamily;
+            ctx.textBaseline = 'alphabetic';
             var ink = ctx.measureText(glyph.textContent);
-            inkMiddles[refId] = (ink.actualBoundingBoxDescent - ink.actualBoundingBoxAscent) / 2;
+            inkMiddles[refId] = (alphabeticBelowCentral +
+                (ink.actualBoundingBoxDescent - ink.actualBoundingBoxAscent) / 2) / MAGNIFY;
         }
         return inkMiddles[refId];
     }

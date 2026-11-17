@@ -1,5 +1,6 @@
-// sw.js's one mechanical promise: the list it precaches is the site,
-// read out of sw.js as text and compared with what is under web/.
+// sw.js's mechanical promises, read out of sw.js as text: the list it
+// precaches is the site under web/, a new version takes over on reload,
+// and the cache answers first.
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
@@ -32,4 +33,28 @@ test('every file under web/ is precached, except sw.js itself', () => {
     for (const file of siteFiles(WEB)) {
         if (file !== 'sw.js') assert.ok(files.includes(file), file + ' is not precached');
     }
+});
+
+function handler(name) {
+    const src = fs.readFileSync(path.join(WEB, 'sw.js'), 'utf8');
+    const body = src.match(new RegExp("addEventListener\\('" + name + "', \\(event\\) => \\{([\\s\\S]*?)\\n\\}\\);"));
+    assert.ok(body, 'sw.js has no ' + name + ' handler');
+    return body[1];
+}
+
+test('install skips waiting', () => {
+    assert.match(handler('install'), /self\.skipWaiting\(\)/);
+});
+
+test('activate claims its clients', () => {
+    assert.match(handler('activate'), /self\.clients\.claim\(\)/);
+});
+
+test('fetch answers from the cache first', () => {
+    assert.match(handler('fetch'), /caches\.match\(event\.request\)\.then\(\(hit\) => hit \|\| fetch\(event\.request\)\)/);
+});
+
+test('CACHE is daylight-clock-v5', () => {
+    const src = fs.readFileSync(path.join(WEB, 'sw.js'), 'utf8');
+    assert.match(src, /const CACHE = 'daylight-clock-v5';/);
 });
