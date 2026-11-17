@@ -332,3 +332,30 @@ starting with the skeleton session.
    `web/sw.js` to `daylight-clock-v4`.
 
 ### Session 16: Release 1.2.0 (release: 1.2.0)
+
+### Session 17: Turned digits level at every scale, and a new version takes over on reload
+
+1. Register.
+2. Session 15's turned 2 and 3 (the 48 clock's X and E) now sit about two
+   glyph units too high: `inkMiddle` in `web/index.html` measures the ink
+   from canvas's `'middle'` baseline, which is not SVG's `central` baseline
+   (in Arial bold at 14 the two are about a unit apart). Before session 15
+   the turn about the text origin left the turned digit about 0.4 units
+   low — unseen in the readout, seen in the small reading under it. Turn
+   it about the middle of its ink measured against the baseline the
+   glyphs are drawn on: canvas's `'alphabetic'` baseline for the ink, and
+   the offset from SVG's `central` to its `alphabetic` baseline measured
+   from the SVG itself (the difference of two hidden probe texts'
+   `getBBox().y`), once per turned glyph. A turned digit's top and bottom
+   are level with its neighbours' — within a tenth of a glyph unit when
+   rendered — in the readout and in the other system's reading, in both
+   systems.
+3. In `web/sw.js` a new version takes over without waiting for every
+   tab and app window to close: `install` calls `self.skipWaiting()` and
+   `activate` calls `self.clients.claim()`, so a reload after a deploy
+   shows it. The cache stays cache-first. Bump `CACHE` to
+   `daylight-clock-v5`.
+4. The 48 clock stays the default only where nothing is saved; a saved
+   choice is still honoured, and no storage key changes.
+
+### Session 18: Release 1.2.1 (release: 1.2.1)
