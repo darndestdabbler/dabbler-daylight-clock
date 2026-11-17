@@ -368,9 +368,9 @@
     {
       "number": 19,
       "title": "The About page condensed, with dek and el, the dozenal societies and the clock in twelves",
-      "status": "in-progress",
+      "status": "complete",
       "startedAt": "2026-11-17T05:22:12.257000-05:00",
-      "completedAt": null,
+      "completedAt": "2026-11-17T05:25:17.046000-05:00",
       "orchestrator": {
         "engine": "claude-code",
         "provider": "anthropic",
