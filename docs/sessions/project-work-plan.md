@@ -29,7 +29,7 @@ The numbered sessions are declared from `session-plan.md`; each one's task is wh
 | 15 | Hour ticks at the edge, minor numbers, level turned digits, and the 48 clock by default | no | 2026-11-16 |
 | 16 | Release 1.2.0 (release: 1.2.0) | yes | 2026-11-16 |
 | 17 | Turned digits level at every scale, and a new version takes over on reload | no | 2026-11-16 |
-| 18 | Release 1.2.1 (release: 1.2.1) | — | not declared |
+| 18 | Release 1.2.1 (release: 1.2.1) | yes | 2026-11-16 |
 
 ### Session 1 — Author or import the solution plan
 
@@ -132,3 +132,9 @@ Release 1.2.0: the framework packs and publishes what is on the trunk.
 **Releasable: no.**
 
 Level the 48 clock's turned digits at every scale and let a new version take over on reload. In web/index.html, inkMiddle stops measuring the ink from canvas's 'middle' baseline (which is not SVG's central baseline): it measures the turned glyph's ink with canvas's 'alphabetic' baseline, and adds the offset from SVG's central baseline to its alphabetic baseline measured from the SVG itself, as the difference of the getBBox().y of two hidden probe texts of that glyph (one with dominant-baseline central, one alphabetic), once per turned glyph and cached, so the X and E (turned 2 and 3) turn about the middle of their ink and their top and bottom sit level with their neighbours' in the readout and in the other system's reading, in both systems. In web/sw.js, install calls self.skipWaiting() and activate calls self.clients.claim(), the fetch handler stays cache-first, and CACHE becomes daylight-clock-v5; tests/sw.test.js gains tests for those three facts. The 48 clock stays the default only where nothing is saved, a saved choice is still honoured, and no storage key changes.
+
+### Session 18 — Release 1.2.1 (release: 1.2.1)
+
+**Releasable: yes.**
+
+Release 1.2.1: the framework packs and publishes what is on the trunk.
