@@ -55,6 +55,36 @@ test('describeArc matches v3', () => {
         'M 0 0 L 101.7746245229456 -15.840637714859838 A 103 103 0 1 1 -81.62502651595895 -62.820021062309415 Z');
 });
 
+const JUNE = DATE;
+const DECEMBER = POLAR_NIGHT;
+
+test('polarState at the poles: 90° N is day in June and night in December, 90° S the reverse', () => {
+    assert.equal(ClockCore.polarState(JUNE, 90), 'day');
+    assert.equal(ClockCore.polarState(DECEMBER, 90), 'night');
+    assert.equal(ClockCore.polarState(JUNE, -90), 'night');
+    assert.equal(ClockCore.polarState(DECEMBER, -90), 'day');
+});
+
+test('polarState is night at 80° N on 21 December, where getSunTimes is null', () => {
+    assert.equal(ClockCore.getSunTimes(DECEMBER, 80, 0), null);
+    assert.equal(ClockCore.polarState(DECEMBER, 80), 'night');
+});
+
+test('polarState is null where the sun rises and sets', () => {
+    assert.equal(ClockCore.polarState(JUNE, 60), null);
+    assert.equal(ClockCore.polarState(JUNE, 0), null);
+    assert.equal(ClockCore.polarState(DECEMBER, 0), null);
+});
+
+test('describeDisc is a closed path whose arcs go all the way round', () => {
+    const d = ClockCore.describeDisc(0, 0, 103);
+    assert.equal(d, 'M 0 -103 A 103 103 0 1 1 0 103 A 103 103 0 1 1 0 -103 Z');
+    // Two clockwise half turns: out to the opposite point, then back to the start.
+    const arcs = [...d.matchAll(/A 103 103 0 1 1 (\S+) (\S+)/g)].map((m) => [Number(m[1]), Number(m[2])]);
+    assert.deepEqual(arcs, [[0, 103], [0, -103]]);
+    assert.ok(d.endsWith(' Z'));
+});
+
 test('spanDegrees matches v3', () => {
     assert.equal(ClockCore.spanDegrees(81.15322231588334, 307.5824980309585), 226.42927571507516);
     assert.equal(ClockCore.spanDegrees(300, 60), 120);

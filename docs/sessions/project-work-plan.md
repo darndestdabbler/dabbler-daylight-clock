@@ -32,6 +32,8 @@ The numbered sessions are declared from `session-plan.md`; each one's task is wh
 | 18 | Release 1.2.1 (release: 1.2.1) | yes | 2026-11-16 |
 | 19 | The About page condensed, with dek and el, the dozenal societies and the clock in twelves | no | 2026-11-17 |
 | 20 | Release 1.3.0 (release: 1.3.0) | yes | 2026-11-17 |
+| 21 | The system toggle, 24 × 60 × 60 by default again, two far cities and a latitude control | no | 2026-11-19 |
+| 22 | Release 1.4.0 (release: 1.4.0) | — | not declared |
 
 ### Session 1 — Author or import the solution plan
 
@@ -152,3 +154,9 @@ Replace web/about.html with the approved draft docs/planning/about-draft.html, w
 **Releasable: yes.**
 
 Release 1.3.0: the framework packs and publishes what is on the trunk.
+
+### Session 21 — The system toggle, 24 × 60 × 60 by default again, two far cities and a latitude control
+
+**Releasable: no.**
+
+Replace the time-system dropdown in web/index.html with a two-button 24 × 60 × 60 / 48 × 48 × 48 toggle on its own non-wrapping row at the top of .controls (aria-pressed on each, set by setSystem, themed through the existing tokens); make 24 × 60 × 60 the default again (initial value, setSystem fallback, initSystem, section comment) and move the (default) mark and selector wording in docs/planning/solution-plan.md; add Cape Town (Africa/Johannesburg) and Fairbanks (America/Anchorage) to the timezone list and TZ_LOCATIONS after Tokyo; add polarState(date, lat) and describeDisc(x, y, radius) to web/clock-core.js with their tests and contract lines, leaving getSunTimes and describeArc untouched; add a #latitude-select after the timezone dropdown whose 'current' option is labelled with the place's rounded latitude and whose fixed latitudes replace only the latitude the daylight is drawn with; draw polar days and nights (whole gold/green disc on a polar day, cleared gold on a polar night, blue markers only when the shortest day has a sunrise and sunset); and bump the service worker CACHE to daylight-clock-v7 with its test.

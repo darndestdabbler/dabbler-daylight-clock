@@ -12,8 +12,8 @@ divisions of the day the user picks:
 
 | System | Divisions | Hands | Digital readout | Face labels |
 |---|---|---|---|---|
-| **24 × 60 × 60** | hour / minute / second | hour (one turn a day), minute (one turn an hour), second (one turn a minute) | base 10, 24-hour `HH:MM:SS` | majors 0 6 12 18 at the quarter days; minors 3 9 15 21 between them; an hour tick in the hour hand's rose at each of the 24 hours, at the face's edge; 60 minute ticks, a major every 5, so the minute and second hands land on a tick |
-| **48 × 48 × 48** ("the 48 clock") (default) | dour / zan / mec (30 min / 37.5 s / 0.78125 s) | dour (one turn a day), zan (one turn a dour), mec (one turn a zan) | dozenal `DD:ZZ:MM` with X and E, as today | majors 0 1 2 3 at the quarter days; minors 4 and 8, as today |
+| **24 × 60 × 60** (default) | hour / minute / second | hour (one turn a day), minute (one turn an hour), second (one turn a minute) | base 10, 24-hour `HH:MM:SS` | majors 0 6 12 18 at the quarter days; minors 3 9 15 21 between them; an hour tick in the hour hand's rose at each of the 24 hours, at the face's edge; 60 minute ticks, a major every 5, so the minute and second hands land on a tick |
+| **48 × 48 × 48** ("the 48 clock") | dour / zan / mec (30 min / 37.5 s / 0.78125 s) | dour (one turn a day), zan (one turn a dour), mec (one turn a zan) | dozenal `DD:ZZ:MM` with X and E, as today | majors 0 1 2 3 at the quarter days; minors 4 and 8, as today |
 
 In both systems the dial is the whole day, so the quarter-day majors, the
 sunrise/sunset wedges and the shortest-day markers sit in the same places;
@@ -23,7 +23,8 @@ every 2 hours on the 24-hour face), on the labelled positions.
 
 Done means:
 
-- the user switches between the two systems from a control, and the choice
+- the user switches between the two systems from a two-button toggle that
+  shows both at once (24 × 60 × 60 by default), and the choice
   is remembered on the device;
 - no hand carries a Z, in either system;
 - beneath the digital readout, the **other** system's reading is shown (the
@@ -74,7 +75,8 @@ browser:
   readout strings, the face layout (ticks and labels) for a system, and the
   sunrise/sunset → dial-angle calculations moved over from v3
   (`getSunTimes`, `getTimezoneOffset`, `getSolarAngles`, `describeArc`,
-  `spanDegrees`).
+  `spanDegrees`), with `polarState` and `describeDisc` for the days that
+  have no sunrise or sunset.
 - **Contract:**
   - *In:* a system id (`"24x60x60"` or `"48x48x48"`), seconds since local
     midnight in `[0, 86400)`, and for the solar functions a date, a
@@ -89,11 +91,17 @@ browser:
     24 × 60 × 60 and two dozenal digits per unit (X = 10, E = 11) for the
     48 clock; `faceLayout(system)` gives the tick list (angle, major/minor),
     label list (angle, text, major/minor) and `hourTicks` list (angle; empty
-    for the 48 clock). Same input, same output: no clock reads,
+    for the 48 clock); `polarState(date, lat)` gives `'day'` when the sun
+    does not set that day, `'night'` when it does not rise, and `null` when
+    it does both (with `getSunTimes`'s day of year, declination and 90.833°
+    zenith, compared without dividing, so the poles answer too);
+    `describeDisc(x, y, radius)` gives the SVG path of a whole circle, which
+    `describeArc` cannot draw. Same input, same output: no clock reads,
     no randomness.
   - *Failure:* an unknown system id or a time outside `[0, 86400)` throws a
-    `RangeError`; a polar day or night (no sunrise/sunset) returns `null`,
-    as v3 does, and the page draws no wedge.
+    `RangeError`; a polar day or night (no sunrise/sunset) returns `null`
+    from `getSunTimes` and `getSolarAngles`, as v3 does, and `polarState`
+    says which it is.
   - It touches no `document`, `window` or `localStorage`, and loads both as
     a classic `<script>` (exposing `ClockCore`) and under Node's
     `require` — so it also works when the page is opened from disk, where
@@ -104,7 +112,7 @@ browser:
 ### `web/index.html` (+ `about.html`, `manifest.webmanifest`, `sw.js`) — the page
 
 - **Responsible for:** drawing the SVG face, hands and readouts from what
-  `clock-core.js` returns; the controls (system, daylight, timezone, date
+  `clock-core.js` returns; the controls (system toggle, daylight, timezone, date
   override, theme); remembering the system and theme choice in
   `localStorage`; geolocation; the About page; installability and the
   offline cache.
@@ -154,8 +162,8 @@ sessions.
    - `reading`, `handAngles`, `formatReading` and `faceLayout` for both
      systems, with their tests.
    - The 24 × 60 × 60 face (24 ticks, majors 0–3, minors 2 and 4), its
-     base-10 24-hour readout, and the system selector (remembered; the
-     48 clock is the default).
+     base-10 24-hour readout, and the system toggle (remembered;
+     24 × 60 × 60 is the default).
    - The Z removed from the zan hand; the line under the readout shows the
      other system's reading.
 3. **About page** (1 session)

@@ -193,6 +193,33 @@
     }
 
     /**
+     * Why `date` has no sunrise or sunset at `lat`: 'day' when the sun does
+     * not set, 'night' when it does not rise, null when it does both. Uses
+     * getSunTimes's day of year, declination and 90.833° zenith, and
+     * compares without dividing, so the poles themselves answer too.
+     */
+    function polarState(date, lat) {
+        var rad = Math.PI / 180;
+        var start = new Date(date.getFullYear(), 0, 0);
+        var dayOfYear = Math.floor((date - start) / (1000 * 60 * 60 * 24));
+        var declination = 23.45 * Math.sin(rad * (360 / 365) * (dayOfYear - 81));
+
+        var n = Math.cos(90.833 * rad) - Math.sin(lat * rad) * Math.sin(declination * rad);
+        var d = Math.cos(lat * rad) * Math.cos(declination * rad);
+        if (n < -d) return 'day';
+        if (n > d) return 'night';
+        return null;
+    }
+
+    /** SVG path of a whole circle: two half-turn arcs from the top and back. */
+    function describeDisc(x, y, radius) {
+        return "M " + x + " " + (y - radius) +
+               " A " + radius + " " + radius + " 0 1 1 " + x + " " + (y + radius) +
+               " A " + radius + " " + radius + " 0 1 1 " + x + " " + (y - radius) +
+               " Z";
+    }
+
+    /**
      * Get the UTC offset (in minutes) for a timezone on a given date.
      */
     function getTimezoneOffset(tz, refDate) {
@@ -243,6 +270,8 @@
         utcMinutesToClockAngle: utcMinutesToClockAngle,
         getSolarAngles: getSolarAngles,
         describeArc: describeArc,
+        polarState: polarState,
+        describeDisc: describeDisc,
         spanDegrees: spanDegrees
     };
 
