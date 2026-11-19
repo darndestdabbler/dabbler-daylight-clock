@@ -405,3 +405,88 @@ starting with the skeleton session.
    Nothing under `web/` other than `about.html` and `sw.js` changes.
 
 ### Session 20: Release 1.3.0 (release: 1.3.0)
+
+### Session 21: The system toggle, 24 × 60 × 60 by default again, two far cities and a latitude control
+
+1. Register.
+2. In `web/index.html` the time-system dropdown (`#system-select`) goes.
+   In its place is a two-button toggle, `24 × 60 × 60` beside
+   `48 × 48 × 48`, so both systems are seen at once. It sits on a row of
+   its own directly under the clock card: the first thing in `.controls`,
+   above the Daylight Time button, the two buttons side by side and never
+   wrapping onto two lines, at 360 px wide as well. The system in use is
+   the highlighted button and carries `aria-pressed="true"`; the other
+   carries `aria-pressed="false"`. A click on either calls
+   `setSystem(<id>, true)`, and `setSystem` sets the two buttons' pressed
+   state where it set the dropdown's value. The toggle follows the theme
+   through the existing colour tokens, in light and dark.
+3. Make 24 × 60 × 60 the default again. In `web/index.html` the system
+   drawn when nothing is saved, and the fallback for a saved value that
+   names no system, become `24x60x60` (the `let system` initial value,
+   `setSystem`'s fallback, both values in `initSystem`, and the section
+   comment). A saved choice is still honoured, and no storage key changes.
+   Move the `(default)` mark in `docs/planning/solution-plan.md` back to
+   the 24 × 60 × 60 row, and amend the lines there that name the default
+   or call the control a selector.
+4. Add two cities to the timezone list and to `TZ_LOCATIONS`, after
+   Tokyo: **Cape Town** (`Africa/Johannesburg`, lat −33.9249,
+   lng 18.4241) and **Fairbanks** (`America/Anchorage`, lat 64.8378,
+   lng −147.7164). They behave as the other cities do: the clock reads
+   that zone's time and the daylight is drawn for that place.
+5. In `web/clock-core.js`, beside the solar functions and exported on
+   `ClockCore`, with `getSunTimes` and `describeArc` left exactly as they
+   are:
+   - `polarState(date, lat)` says why a date has no sunrise or sunset:
+     `'day'` when the sun does not set, `'night'` when it does not rise,
+     and `null` when it does both. It uses `getSunTimes`'s own day of
+     year, declination and 90.833° zenith, and compares without dividing
+     — with `n = cos(90.833°) − sin(lat)·sin(dec)` and
+     `d = cos(lat)·cos(dec)`, `'day'` when `n < −d` and `'night'` when
+     `n > d` — so the poles themselves, where `d` is zero, answer too;
+   - `describeDisc(x, y, radius)` returns the path of a whole circle
+     (`describeArc` cannot draw one: a 360° sweep starts and ends on the
+     same point).
+   `tests/clock-core.test.js` gains: `polarState` at 90° N is `'day'` on
+   21 June and `'night'` on 21 December, and the reverse at 90° S; it is
+   `'night'` at 80° N on 21 December, where `getSunTimes` is `null`; it
+   is `null` at 60° N on 21 June and at the equator on both solstices;
+   and `describeDisc` returns a closed path whose arcs go all the way
+   round. Add both functions' contract lines to
+   `docs/planning/solution-plan.md`.
+6. In `web/index.html` a latitude dropdown, `#latitude-select`, follows
+   the timezone dropdown. Its options, in this order:
+   - `current`, selected at the start: the latitude the daylight is drawn
+     for when nothing else is chosen — the device's under Local Time (or
+     its fallback city's), or the chosen city's. Its label is that
+     latitude rounded to a whole degree with `(current)` beside it —
+     `41° N (current)`, `34° S (current)`, `0° (current)` — and it is
+     rewritten whenever that place changes: a location answer, a
+     fallback, a change of timezone. Until a place is known it reads
+     `Latitude (current)`;
+   - `90° N`, `60° N`, `30° N`, `0° (Equator)`, `30° S`, `60° S`,
+     `90° S`.
+   Choosing a fixed latitude replaces only the latitude the daylight is
+   drawn with — in `updateSolarGeometry` and in `updateClock`'s today
+   wedge — and redraws at once; the longitude, the timezone and the
+   clock's time stay as the timezone dropdown sets them. Choosing
+   `current` goes back to the place's own. The choice holds across a
+   change of timezone or date, and is not remembered across visits.
+7. Draw the days that have no sunrise or sunset, which 90° N and 90° S
+   always are, and which no place offered before was. Wherever the page
+   gets `null` from `getSolarAngles`, it asks `polarState`:
+   - today's daylight (gold) is the whole disc (`describeDisc` at
+     `WEDGE_RADIUS`) on a polar day and is cleared on a polar night — it
+     no longer keeps the last place's wedge;
+   - the longest day is still picked by length, a polar day counting as
+     the whole day and a polar night as none; its daylight (green) is
+     the whole disc when it is a polar day;
+   - the shortest day's markers (blue) are drawn only when that day has a
+     sunrise and a sunset, and are cleared otherwise.
+   The Date override applies as it does now. At 60° and below, and for
+   every city, the face draws exactly as before.
+8. Bump `CACHE` in `web/sw.js` to `daylight-clock-v7`, and update its
+   test in `tests/sw.test.js`. `web/about.html` does not change, and
+   `tests/architecture.test.js` stays as it is: the core gains no DOM and
+   the page calls no server.
+
+### Session 22: Release 1.4.0 (release: 1.4.0)
