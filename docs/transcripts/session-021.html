@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Session 021 transcript</title>
+<style>
+:root {
+  --page: #ffffff;
+  --ink: #1f1f1f;
+  --faint: #e4e4e4;
+  --panel: #f6f6f6;
+  --tone-milestone: #2a5db0;
+  --tone-good: #256029;
+  --tone-warn: #8a6100;
+  --tone-bad: #a31515;
+  --tone-muted: #6b6b6b;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --page: #1e1e1e;
+    --ink: #d4d4d4;
+    --faint: #3a3a3a;
+    --panel: #252526;
+  --tone-milestone: #3874db;
+  --tone-good: #54a33b;
+  --tone-warn: #b79427;
+  --tone-bad: #f14c4c;
+  --tone-muted: #8c8c8c;
+  }
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  padding: 24px 16px 64px;
+  background: var(--page);
+  color: var(--ink);
+  font: 14px/1.6 ui-sans-serif, system-ui, "Segoe UI", sans-serif;
+}
+main { max-width: 68rem; margin: 0 auto; }
+h1 { font-size: 1.4rem; margin: 0 0 .25rem; }
+h2 { font-size: 1.05rem; margin: 2.5rem 0 .75rem; border-bottom: 1px solid var(--faint); padding-bottom: .3rem; }
+.stamp { color: var(--tone-muted); font-size: .85rem; margin: 0 0 .25rem; }
+.mono, pre, code { font-family: ui-monospace, "Cascadia Mono", Consolas, monospace; }
+.lines { font-family: ui-monospace, "Cascadia Mono", Consolas, monospace; font-size: 13px; }
+.line { white-space: pre-wrap; word-break: break-word; padding-left: 10.5ch; text-indent: -10.5ch; }
+.at { color: var(--tone-muted); }
+table { border-collapse: collapse; width: 100%; font-size: 13px; }
+th, td { text-align: left; padding: .35rem .6rem; border-bottom: 1px solid var(--faint); vertical-align: top; }
+th { color: var(--tone-muted); font-weight: 600; }
+details { margin: .5rem 0; }
+summary { cursor: pointer; }
+td details { margin: 0; }
+tr:has(details:not([open])) + tr.findings { display: none; }
+tr.findings > td { padding: 0 0 .5rem 1.5rem; }
+pre { background: var(--panel); padding: .75rem; overflow-x: auto; white-space: pre-wrap; word-break: break-word; font-size: 12.5px; }
+.stop, .cancelled { border-left: 3px solid var(--tone-bad); background: var(--panel); padding: .6rem .9rem; }
+.milestone { color: var(--tone-milestone); }
+.good { color: var(--tone-good); }
+.warn { color: var(--tone-warn); }
+.bad { color: var(--tone-bad); }
+.muted { color: var(--tone-muted); }
+</style>
+</head>
+<body>
+<main>
+<h1>Session 021 transcript</h1>
+<p class="stamp">Rendered 2026-11-19T09:13:41.607Z by dabbler-ai-router 3.38.0 at 51e2b02c096f92d51a2d73353aae7f754ce463a8.</p>
+<p class="stamp">Engine cli, last phase <span class="milestone">log</span>, started 2026-11-19T04:05:22.154-05:00.</p>
+<h2>Session Plan</h2>
+<h3>Session 21: The system toggle, 24 × 60 × 60 by default again, two far cities and a latitude control</h3>
+<ol><li>Register.</li><li>In <code>web/index.html</code> the time-system dropdown (<code>#system-select</code>) goes. In its place is a two-button toggle, <code>24 × 60 × 60</code> beside <code>48 × 48 × 48</code>, so both systems are seen at once. It sits on a row of its own directly under the clock card: the first thing in <code>.controls</code>, above the Daylight Time button, the two buttons side by side and never wrapping onto two lines, at 360 px wide as well. The system in use is the highlighted button and carries <code>aria-pressed=&quot;true&quot;</code>; the other carries <code>aria-pressed=&quot;false&quot;</code>. A click on either calls <code>setSystem(&lt;id&gt;, true)</code>, and <code>setSystem</code> sets the two buttons' pressed state where it set the dropdown's value. The toggle follows the theme through the existing colour tokens, in light and dark.</li><li>Make 24 × 60 × 60 the default again. In <code>web/index.html</code> the system drawn when nothing is saved, and the fallback for a saved value that names no system, become <code>24x60x60</code> (the <code>let system</code> initial value, <code>setSystem</code>'s fallback, both values in <code>initSystem</code>, and the section comment). A saved choice is still honoured, and no storage key changes. Move the <code>(default)</code> mark in <code>docs/planning/solution-plan.md</code> back to the 24 × 60 × 60 row, and amend the lines there that name the default or call the control a selector.</li><li>Add two cities to the timezone list and to <code>TZ_LOCATIONS</code>, after Tokyo: <strong>Cape Town</strong> (<code>Africa/Johannesburg</code>, lat −33.9249, lng 18.4241) and <strong>Fairbanks</strong> (<code>America/Anchorage</code>, lat 64.8378, lng −147.7164). They behave as the other cities do: the clock reads that zone's time and the daylight is drawn for that place.</li><li>In <code>web/clock-core.js</code>, beside the solar functions and exported on <code>ClockCore</code>, with <code>getSunTimes</code> and <code>describeArc</code> left exactly as they are:</li></ol>
+<ul><li><code>polarState(date, lat)</code> says why a date has no sunrise or sunset: <code>'day'</code> when the sun does not set, <code>'night'</code> when it does not rise, and <code>null</code> when it does both. It uses <code>getSunTimes</code>'s own day of year, declination and 90.833° zenith, and compares without dividing — with <code>n = cos(90.833°) − sin(lat)·sin(dec)</code> and <code>d = cos(lat)·cos(dec)</code>, <code>'day'</code> when <code>n &lt; −d</code> and <code>'night'</code> when <code>n &gt; d</code> — so the poles themselves, where <code>d</code> is zero, answer too;</li><li><code>describeDisc(x, y, radius)</code> returns the path of a whole circle (<code>describeArc</code> cannot draw one: a 360° sweep starts and ends on the same point). <code>tests/clock-core.test.js</code> gains: <code>polarState</code> at 90° N is <code>'day'</code> on 21 June and <code>'night'</code> on 21 December, and the reverse at 90° S; it is <code>'night'</code> at 80° N on 21 December, where <code>getSunTimes</code> is <code>null</code>; it is <code>null</code> at 60° N on 21 June and at the equator on both solstices; and <code>describeDisc</code> returns a closed path whose arcs go all the way round. Add both functions' contract lines to <code>docs/planning/solution-plan.md</code>.</li></ul>
+<ol><li>In <code>web/index.html</code> a latitude dropdown, <code>#latitude-select</code>, follows the timezone dropdown. Its options, in this order:</li></ol>
+<ul><li><code>current</code>, selected at the start: the latitude the daylight is drawn for when nothing else is chosen — the device's under Local Time (or its fallback city's), or the chosen city's. Its label is that latitude rounded to a whole degree with <code>(current)</code> beside it — <code>41° N (current)</code>, <code>34° S (current)</code>, <code>0° (current)</code> — and it is rewritten whenever that place changes: a location answer, a fallback, a change of timezone. Until a place is known it reads <code>Latitude (current)</code>;</li><li><code>90° N</code>, <code>60° N</code>, <code>30° N</code>, <code>0° (Equator)</code>, <code>30° S</code>, <code>60° S</code>, <code>90° S</code>. Choosing a fixed latitude replaces only the latitude the daylight is drawn with — in <code>updateSolarGeometry</code> and in <code>updateClock</code>'s today wedge — and redraws at once; the longitude, the timezone and the clock's time stay as the timezone dropdown sets them. Choosing <code>current</code> goes back to the place's own. The choice holds across a change of timezone or date, and is not remembered across visits.</li></ul>
+<ol><li>Draw the days that have no sunrise or sunset, which 90° N and 90° S always are, and which no place offered before was. Wherever the page gets <code>null</code> from <code>getSolarAngles</code>, it asks <code>polarState</code>:</li></ol>
+<ul><li>today's daylight (gold) is the whole disc (<code>describeDisc</code> at <code>WEDGE_RADIUS</code>) on a polar day and is cleared on a polar night — it no longer keeps the last place's wedge;</li><li>the longest day is still picked by length, a polar day counting as the whole day and a polar night as none; its daylight (green) is the whole disc when it is a polar day;</li><li>the shortest day's markers (blue) are drawn only when that day has a sunrise and a sunset, and are cleared otherwise. The Date override applies as it does now. At 60° and below, and for every city, the face draws exactly as before.</li></ul>
+<ol><li>Bump <code>CACHE</code> in <code>web/sw.js</code> to <code>daylight-clock-v7</code>, and update its test in <code>tests/sw.test.js</code>. <code>web/about.html</code> does not change, and <code>tests/architecture.test.js</code> stays as it is: the core gains no DOM and the page calls no server.</li></ol>
+<h2>Work Plan</h2>
+<p>Replace the time-system dropdown in web/index.html with a two-button 24 × 60 × 60 / 48 × 48 × 48 toggle on its own non-wrapping row at the top of .controls (aria-pressed on each, set by setSystem, themed through the existing tokens); make 24 × 60 × 60 the default again (initial value, setSystem fallback, initSystem, section comment) and move the (default) mark and selector wording in docs/planning/solution-plan.md; add Cape Town (Africa/Johannesburg) and Fairbanks (America/Anchorage) to the timezone list and TZ_LOCATIONS after Tokyo; add polarState(date, lat) and describeDisc(x, y, radius) to web/clock-core.js with their tests and contract lines, leaving getSunTimes and describeArc untouched; add a #latitude-select after the timezone dropdown whose 'current' option is labelled with the place's rounded latitude and whose fixed latitudes replace only the latitude the daylight is drawn with; draw polar days and nights (whole gold/green disc on a polar day, cleared gold on a polar night, blue markers only when the shortest day has a sunrise and sunset); and bump the service worker CACHE to daylight-clock-v7 with its test.</p>
+<p>Landed <a href="https://github.com/darndestdabbler/dabbler-daylight-clock/commit/9b52f06676b5e3d4667c1f4d685aa620dce3db51"><code>9b52f06676b5e3d4667c1f4d685aa620dce3db51</code></a>.</p>
+<table>
+<tr><th>Step</th><th>Ask</th><th>Files</th><th>Checks</th><th>Accepted</th></tr>
+<tr><td>System toggle</td><td><p>In web/index.html replace #system-select with a two-button toggle (24 × 60 × 60 beside 48 × 48 × 48) as the first row of .controls, above the Daylight Time button, on a row of its own that never wraps (also at 360 px); each button carries aria-pressed, a click calls setSystem(&lt;id&gt;, true), and setSystem sets both buttons' pressed state; style it with the existing colour tokens for light and dark.</p></td><td><span class="mono">web/index.html</span></td><td><code>node -e const s=require('fs').readFileSync('web/index.html','utf8'); if(s.includes('system-select')||!s.includes('aria-pressed')) process.exit(1)</code></td><td>yes</td></tr>
+<tr><td>Default 24</td><td><p>Make 24x60x60 the default in web/index.html: the let system initial value, setSystem's fallback, both values in initSystem and the section comment. In docs/planning/solution-plan.md move the (default) mark to the 24 × 60 × 60 row and amend the lines that name the default or call the control a selector.</p></td><td><span class="mono">web/index.html</span><br><span class="mono">docs/planning/solution-plan.md</span></td><td><code>node -e const s=require('fs').readFileSync('web/index.html','utf8'); if(!s.includes(&quot;let system = '24x60x60'&quot;)||s.includes(&quot;= '48x48x48'&quot;)||s.includes(&quot;|| '48x48x48'&quot;)) process.exit(1)</code><br><code>node -e const l=require('fs').readFileSync('docs/planning/solution-plan.md','utf8').split('\n').filter(x=&gt;x.includes('(default)')); if(l.length!==1||!l[0].startsWith('| **24')) process.exit(1)</code></td><td>yes</td></tr>
+<tr><td>Far cities</td><td><p>In web/index.html add Cape Town (Africa/Johannesburg, lat -33.9249, lng 18.4241) and Fairbanks (America/Anchorage, lat 64.8378, lng -147.7164) after Tokyo, both in #timezone-select and in TZ_LOCATIONS.</p></td><td><span class="mono">web/index.html</span></td><td><code>node -e const s=require('fs').readFileSync('web/index.html','utf8'); for(const k of ['Africa/Johannesburg','America/Anchorage']){ if(s.split(k).length&lt;3) process.exit(1) } if(!s.includes('-33.9249')||!s.includes('-147.7164')) process.exit(1)</code></td><td>yes</td></tr>
+<tr><td>Polar core</td><td><p>In web/clock-core.js add polarState(date, lat) ('day' when n &lt; -d, 'night' when n &gt; d, else null, using getSunTimes's day of year, declination and 90.833° zenith) and describeDisc(x, y, radius) (a whole circle path), both exported on ClockCore, leaving getSunTimes and describeArc as they are. Add their tests to tests/clock-core.test.js (90° N/S on both solstices, 80° N on 21 December, 60° N on 21 June, the equator on both solstices, describeDisc closed and all the way round) and their contract lines to docs/planning/solution-plan.md.</p></td><td><span class="mono">web/clock-core.js</span><br><span class="mono">tests/clock-core.test.js</span><br><span class="mono">docs/planning/solution-plan.md</span></td><td><code>node --test tests/clock-core.test.js</code><br><code>node -e const s=require('fs').readFileSync('docs/planning/solution-plan.md','utf8'); if(!s.includes('polarState')||!s.includes('describeDisc')) process.exit(1)</code></td><td>yes</td></tr>
+<tr><td>Latitude select</td><td><p>In web/index.html add #latitude-select after the timezone dropdown: a 'current' option (selected at start, labelled with the place's latitude rounded to a whole degree plus (current), or Latitude (current) until a place is known, rewritten on a location answer, a fallback or a timezone change) then 90° N, 60° N, 30° N, 0° (Equator), 30° S, 60° S, 90° S. A fixed choice replaces only the latitude used in updateSolarGeometry and in updateClock's today wedge and redraws at once; current returns to the place's own; the choice holds across timezone and date changes and is not stored.</p></td><td><span class="mono">web/index.html</span></td><td><code>node -e const s=require('fs').readFileSync('web/index.html','utf8'); if(!s.includes('id=&quot;latitude-select&quot;')||!s.includes('Latitude (current)')||!s.includes('Equator')) process.exit(1)</code></td><td>yes</td></tr>
+<tr><td>Polar drawing</td><td><p>In web/index.html, wherever getSolarAngles returns null, ask ClockCore.polarState: today's gold is describeDisc at WEDGE_RADIUS on a polar day and cleared on a polar night; the longest day is picked by length with a polar day as the whole day and a polar night as none, its green the whole disc on a polar day; the blue shortest-day markers are drawn only when that day has a sunrise and a sunset. The Date override applies as now; at 60° and below and for every city the face draws as before.</p></td><td><span class="mono">web/index.html</span></td><td><code>node -e const s=require('fs').readFileSync('web/index.html','utf8'); if(!s.includes('ClockCore.polarState')||!s.includes('ClockCore.describeDisc')) process.exit(1)</code></td><td>yes</td></tr>
+<tr><td>Cache v7</td><td><p>Bump CACHE in web/sw.js to daylight-clock-v7 and update its test in tests/sw.test.js.</p></td><td><span class="mono">web/sw.js</span><br><span class="mono">tests/sw.test.js</span></td><td><code>node --test tests/sw.test.js</code></td><td>yes</td></tr>
+</table>
+<p>Non-goals:</p>
+<ul><li>No change to web/about.html or tests/architecture.test.js; the core gains no DOM and the page calls no server.</li><li>No change to getSunTimes or describeArc, and no change to how the face draws at 60° and below or for any city.</li><li>The latitude choice is not remembered across visits, and no storage key is added or renamed.</li><li>No release, version bump or packaging change: the 1.4.0 release is session 22's.</li></ul>
+<h2>What the framework said</h2>
+<div class="lines"><div class="line"><span class="at">[09:05:22]</span> <span class="muted">run-started</span> session=021 mode=pull</div>
+<div class="line"><span class="at">[09:05:23]</span> <span class="muted">instruction-issued</span> seq=1 kind=step step=plan</div>
+<div class="line"><span class="at">[09:06:22]</span> <span class="muted">run-resumed</span> session=021 phase=<span class="milestone">plan</span> mode=pull</div>
+<div class="line"><span class="at">[09:06:22]</span> <span class="muted">answer-taken</span> steps=7</div>
+<div class="line"><span class="at">[09:06:22]</span> <span class="muted">plan-accepted</span> steps=[&quot;system-toggle&quot;,&quot;default-24&quot;,&quot;far-cities&quot;,&quot;polar-core&quot;,&quot;latitude-select&quot;,&quot;polar-drawing&quot;,&quot;cache-v7&quot;] non_goals=4</div>
+<div class="line"><span class="at">[09:06:25]</span> <span class="milestone">phase</span> phase=<span class="milestone">work</span></div>
+<div class="line"><span class="at">[09:06:25]</span> <span class="muted">instruction-issued</span> seq=2 kind=step step=system-toggle</div>
+<div class="line"><span class="at">[09:07:00]</span> <span class="muted">run-resumed</span> session=021 phase=<span class="milestone">work</span> mode=pull</div>
+<div class="line"><span class="at">[09:07:00]</span> <span class="muted">answer-taken</span> seq=2 step=system-toggle status=done notes=System dropdown replaced by a two-button aria-pressed toggle on its own non-wrapping row at the top of .controls, themed via existing tokens</div>
+<div class="line"><span class="at">[09:07:03]</span> <span class="muted">check-started</span> step=system-toggle argv=[&quot;node&quot;,&quot;-e&quot;,&quot;const s=require('fs').readFileSync('web/index.html','utf8'); if(s.includes('system-select')||!s.includes('aria-pressed')) process.exit(1)&quot;]</div>
+<div class="line"><span class="at">[09:07:05]</span> <span class="muted">check-ended</span> step=system-toggle argv=[&quot;node&quot;,&quot;-e&quot;,&quot;const s=require('fs').readFileSync('web/index.html','utf8'); if(s.includes('system-select')||!s.includes('aria-pressed')) process.exit(1)&quot;] outcome=<span class="good">passed</span> seconds=2</div>
+<div class="line"><span class="at">[09:07:07]</span> <span class="muted">report-accepted</span> seq=2 step=system-toggle files=[&quot;web/index.html&quot;] notes=System dropdown replaced by a two-button aria-pressed toggle on its own non-wrapping row at the top of .controls, themed via existing tokens</div>
+<div class="line"><span class="at">[09:07:07]</span> <span class="muted">instruction-issued</span> seq=3 kind=step step=default-24</div>
+<div class="line"><span class="at">[09:07:50]</span> <span class="muted">run-resumed</span> session=021 phase=<span class="milestone">work</span> mode=pull</div>
+<div class="line"><span class="at">[09:07:50]</span> <span class="muted">answer-taken</span> seq=3 step=default-24 status=done notes=24x60x60 is the default and fallback again; solution plan's default mark and selector wording amended</div>
+<div class="line"><span class="at">[09:07:51]</span> <span class="muted">check-started</span> step=default-24 argv=[&quot;node&quot;,&quot;-e&quot;,&quot;const s=require('fs').readFileSync('web/index.html','utf8'); if(!s.includes(\&quot;let system = '24x60x60'\&quot;)||s.includes(\&quot;= '48x48x48'\&quot;)||s.includes(\&quot;|| '48x48x48'\&quot;)) process.exit(1)&quot;]</div>
+<div class="line"><span class="at">[09:07:53]</span> <span class="muted">check-ended</span> step=default-24 argv=[&quot;node&quot;,&quot;-e&quot;,&quot;const s=require('fs').readFileSync('web/index.html','utf8'); if(!s.includes(\&quot;let system = '24x60x60'\&quot;)||s.includes(\&quot;= '48x48x48'\&quot;)||s.includes(\&quot;|| '48x48x48'\&quot;)) process.exit(1)&quot;] outcome=<span class="good">passed</span> seconds=2</div>
+<div class="line"><span class="at">[09:07:53]</span> <span class="muted">check-started</span> step=default-24 argv=[&quot;node&quot;,&quot;-e&quot;,&quot;const l=require('fs').readFileSync('docs/planning/solution-plan.md','utf8').split('\\n').filter(x=&gt;x.includes('(default)')); if(l.length!==1||!l[0].startsWith('| **24')) process.exit(1)&quot;]</div>
+<div class="line"><span class="at">[09:07:55]</span> <span class="muted">check-ended</span> step=default-24 argv=[&quot;node&quot;,&quot;-e&quot;,&quot;const l=require('fs').readFileSync('docs/planning/solution-plan.md','utf8').split('\\n').filter(x=&gt;x.includes('(default)')); if(l.length!==1||!l[0].startsWith('| **24')) process.exit(1)&quot;] outcome=<span class="good">passed</span> seconds=2</div>
+<div class="line"><span class="at">[09:07:56]</span> <span class="muted">report-accepted</span> seq=3 step=default-24 files=[&quot;web/index.html&quot;,&quot;docs/planning/solution-plan.md&quot;] notes=24x60x60 is the default and fallback again; solution plan's default mark and selector wording amended</div>
+<div class="line"><span class="at">[09:07:56]</span> <span class="muted">instruction-issued</span> seq=4 kind=step step=far-cities</div>
+<div class="line"><span class="at">[09:08:16]</span> <span class="muted">run-resumed</span> session=021 phase=<span class="milestone">work</span> mode=pull</div>
+<div class="line"><span class="at">[09:08:16]</span> <span class="muted">answer-taken</span> seq=4 step=far-cities status=done notes=Cape Town and Fairbanks added after Tokyo in the timezone list and TZ_LOCATIONS</div>
+<div class="line"><span class="at">[09:08:19]</span> <span class="muted">check-started</span> step=far-cities argv=[&quot;node&quot;,&quot;-e&quot;,&quot;const s=require('fs').readFileSync('web/index.html','utf8'); for(const k of ['Africa/Johannesburg','America/Anchorage']){ if(s.split(k).length&lt;3) process.exit(1) } if(!s.includes('-33.9249')||!s.includes('-147.7164')) process.exit(1)&quot;]</div>
+<div class="line"><span class="at">[09:08:20]</span> <span class="muted">check-ended</span> step=far-cities argv=[&quot;node&quot;,&quot;-e&quot;,&quot;const s=require('fs').readFileSync('web/index.html','utf8'); for(const k of ['Africa/Johannesburg','America/Anchorage']){ if(s.split(k).length&lt;3) process.exit(1) } if(!s.includes('-33.9249')||!s.includes('-147.7164')) process.exit(1)&quot;] outcome=<span class="good">passed</span> seconds=2</div>
+<div class="line"><span class="at">[09:08:21]</span> <span class="muted">report-accepted</span> seq=4 step=far-cities files=[&quot;web/index.html&quot;] notes=Cape Town and Fairbanks added after Tokyo in the timezone list and TZ_LOCATIONS</div>
+<div class="line"><span class="at">[09:08:21]</span> <span class="muted">instruction-issued</span> seq=5 kind=step step=polar-core</div>
+<div class="line"><span class="at">[09:09:17]</span> <span class="muted">run-resumed</span> session=021 phase=<span class="milestone">work</span> mode=pull</div>
+<div class="line"><span class="at">[09:09:18]</span> <span class="muted">answer-taken</span> seq=5 step=polar-core status=done notes=polarState and describeDisc added and exported, with tests and contract lines; getSunTimes and describeArc unchanged</div>
+<div class="line"><span class="at">[09:09:21]</span> <span class="muted">check-started</span> step=polar-core argv=[&quot;node&quot;,&quot;--test&quot;,&quot;tests/clock-core.test.js&quot;]</div>
+<div class="line"><span class="at">[09:09:24]</span> <span class="muted">check-ended</span> step=polar-core argv=[&quot;node&quot;,&quot;--test&quot;,&quot;tests/clock-core.test.js&quot;] outcome=<span class="good">passed</span> seconds=3</div>
+<div class="line"><span class="at">[09:09:24]</span> <span class="muted">check-started</span> step=polar-core argv=[&quot;node&quot;,&quot;-e&quot;,&quot;const s=require('fs').readFileSync('docs/planning/solution-plan.md','utf8'); if(!s.includes('polarState')||!s.includes('describeDisc')) process.exit(1)&quot;]</div>
+<div class="line"><span class="at">[09:09:25]</span> <span class="muted">check-ended</span> step=polar-core argv=[&quot;node&quot;,&quot;-e&quot;,&quot;const s=require('fs').readFileSync('docs/planning/solution-plan.md','utf8'); if(!s.includes('polarState')||!s.includes('describeDisc')) process.exit(1)&quot;] outcome=<span class="good">passed</span> seconds=2</div>
+<div class="line"><span class="at">[09:09:26]</span> <span class="muted">report-accepted</span> seq=5 step=polar-core files=[&quot;web/clock-core.js&quot;,&quot;tests/clock-core.test.js&quot;,&quot;docs/planning/solution-plan.md&quot;] notes=polarState and describeDisc added and exported, with tests and contract lines; getSunTimes and describeArc unchanged</div>
+<div class="line"><span class="at">[09:09:26]</span> <span class="muted">instruction-issued</span> seq=6 kind=step step=latitude-select</div>
+<div class="line"><span class="at">[09:10:04]</span> <span class="muted">run-resumed</span> session=021 phase=<span class="milestone">work</span> mode=pull</div>
+<div class="line"><span class="at">[09:10:04]</span> <span class="muted">answer-taken</span> seq=6 step=latitude-select status=done notes=Latitude dropdown after the timezone one; current option labelled with the place's rounded latitude; a fixed choice replaces only the drawn latitude and redraws; not stored</div>
+<div class="line"><span class="at">[09:10:07]</span> <span class="muted">check-started</span> step=latitude-select argv=[&quot;node&quot;,&quot;-e&quot;,&quot;const s=require('fs').readFileSync('web/index.html','utf8'); if(!s.includes('id=\&quot;latitude-select\&quot;')||!s.includes('Latitude (current)')||!s.includes('Equator')) process.exit(1)&quot;]</div>
+<div class="line"><span class="at">[09:10:09]</span> <span class="muted">check-ended</span> step=latitude-select argv=[&quot;node&quot;,&quot;-e&quot;,&quot;const s=require('fs').readFileSync('web/index.html','utf8'); if(!s.includes('id=\&quot;latitude-select\&quot;')||!s.includes('Latitude (current)')||!s.includes('Equator')) process.exit(1)&quot;] outcome=<span class="good">passed</span> seconds=3</div>
+<div class="line"><span class="at">[09:10:11]</span> <span class="muted">report-accepted</span> seq=6 step=latitude-select files=[&quot;web/index.html&quot;] notes=Latitude dropdown after the timezone one; current option labelled with the place's rounded latitude; a fixed choice replaces only the drawn latitude and redraws; not stored</div>
+<div class="line"><span class="at">[09:10:11]</span> <span class="muted">instruction-issued</span> seq=7 kind=step step=polar-drawing</div>
+<div class="line"><span class="at">[09:11:01]</span> <span class="muted">run-resumed</span> session=021 phase=<span class="milestone">work</span> mode=pull</div>
+<div class="line"><span class="at">[09:11:01]</span> <span class="muted">answer-taken</span> seq=7 step=polar-drawing status=done notes=Null getSolarAngles now asks polarState: gold whole disc or cleared, longest picked by length with polar day 360/night 0 and green disc on a polar day, blue markers only when the shortest day has rise and set</div>
+<div class="line"><span class="at">[09:11:04]</span> <span class="muted">check-started</span> step=polar-drawing argv=[&quot;node&quot;,&quot;-e&quot;,&quot;const s=require('fs').readFileSync('web/index.html','utf8'); if(!s.includes('ClockCore.polarState')||!s.includes('ClockCore.describeDisc')) process.exit(1)&quot;]</div>
+<div class="line"><span class="at">[09:11:07]</span> <span class="muted">check-ended</span> step=polar-drawing argv=[&quot;node&quot;,&quot;-e&quot;,&quot;const s=require('fs').readFileSync('web/index.html','utf8'); if(!s.includes('ClockCore.polarState')||!s.includes('ClockCore.describeDisc')) process.exit(1)&quot;] outcome=<span class="good">passed</span> seconds=3</div>
+<div class="line"><span class="at">[09:11:09]</span> <span class="muted">report-accepted</span> seq=7 step=polar-drawing files=[&quot;web/index.html&quot;] notes=Null getSolarAngles now asks polarState: gold whole disc or cleared, longest picked by length with polar day 360/night 0 and green disc on a polar day, blue markers only when the shortest day has rise and set</div>
+<div class="line"><span class="at">[09:11:09]</span> <span class="muted">instruction-issued</span> seq=8 kind=step step=cache-v7</div>
+<div class="line"><span class="at">[09:11:36]</span> <span class="muted">run-resumed</span> session=021 phase=<span class="milestone">work</span> mode=pull</div>
+<div class="line"><span class="at">[09:11:36]</span> <span class="muted">answer-taken</span> seq=8 step=cache-v7 status=done notes=CACHE bumped to daylight-clock-v7 and its test updated</div>
+<div class="line"><span class="at">[09:11:38]</span> <span class="muted">check-started</span> step=cache-v7 argv=[&quot;node&quot;,&quot;--test&quot;,&quot;tests/sw.test.js&quot;]</div>
+<div class="line"><span class="at">[09:11:41]</span> <span class="muted">check-ended</span> step=cache-v7 argv=[&quot;node&quot;,&quot;--test&quot;,&quot;tests/sw.test.js&quot;] outcome=<span class="good">passed</span> seconds=3</div>
+<div class="line"><span class="at">[09:11:43]</span> <span class="muted">report-accepted</span> seq=8 step=cache-v7 files=[&quot;web/sw.js&quot;,&quot;tests/sw.test.js&quot;] notes=CACHE bumped to daylight-clock-v7 and its test updated</div>
+<div class="line"><span class="at">[09:11:43]</span> <span class="milestone">phase</span> phase=<span class="milestone">preverify</span></div>
+<div class="line"><span class="at">[09:11:43]</span> <span class="milestone">phase</span> phase=<span class="milestone">verify</span></div>
+<div class="line"><span class="at">[09:11:44]</span> <span class="muted">job-started</span> name=verification pid=20196 log=.dabbler/runs/s21/driver/jobs/verification.log</div>
+<div class="line"><span class="at">[09:12:47]</span> <span class="muted">job-finished</span> name=verification exit=<span class="good">0</span> log=.dabbler/runs/s21/driver/jobs/verification.log</div>
+<div class="line"><span class="at">[09:12:47]</span> <span class="muted">verification-passed</span></div>
+<div class="line"><span class="at">[09:12:47]</span> <span class="milestone">phase</span> phase=<span class="milestone">run-of-record</span></div>
+<div class="line"><span class="at">[09:12:49]</span> <span class="muted">run-of-record</span> suite=node stage=final-full why=node declares no select command=node --test --test-timeout=60000 &quot;tests/**/*.test.js&quot;</div>
+<div class="line"><span class="at">[09:12:49]</span> <span class="muted">job-started</span> name=run of record: node pid=4444 log=.dabbler/runs/s21/driver/jobs/run-of-record-node.log</div>
+<div class="line"><span class="at">[09:12:54]</span> <span class="muted">job-finished</span> name=run of record: node exit=<span class="good">0</span> log=.dabbler/runs/s21/driver/jobs/run-of-record-node.log</div>
+<div class="line"><span class="at">[09:12:54]</span> <span class="milestone">phase</span> phase=<span class="milestone">land</span></div>
+<div class="line"><span class="at">[09:13:02]</span> <span class="muted">committing</span> subject=Session 21: The system toggle, 24 × 60 × 60 by default again, two far c…</div>
+<div class="line"><span class="at">[09:13:04]</span> <span class="muted">pushing</span></div>
+<div class="line"><span class="at">[09:13:11]</span> <span class="muted">landed</span> commit=9b52f06676b5e3d4667c1f4d685aa620dce3db51</div>
+<div class="line"><span class="at">[09:13:11]</span> <span class="milestone">phase</span> phase=<span class="milestone">publish</span></div>
+<div class="line"><span class="at">[09:13:13]</span> <span class="muted">publish-skipped</span> reason=an ordinary session never publishes</div>
+<div class="line"><span class="at">[09:13:13]</span> <span class="milestone">phase</span> phase=<span class="milestone">close</span></div>
+<div class="line"><span class="at">[09:13:15]</span> <span class="muted">job-started</span> name=close pid=69396 log=.dabbler/runs/s21/driver/jobs/close.log</div>
+<div class="line"><span class="at">[09:13:41]</span> <span class="muted">job-finished</span> name=close exit=<span class="good">0</span> log=.dabbler/runs/s21/driver/jobs/close.log</div>
+<div class="line"><span class="at">[09:13:41]</span> <span class="milestone">phase</span> phase=<span class="milestone">log</span></div>
+<div class="line"><span class="at">[09:13:41]</span> <span class="muted">transcript-rendering</span> carry=outline</div></div>
+<h2>Verification</h2>
+<table>
+<tr><th>Round</th><th>Phase</th><th>Verdict</th><th>Reviewer</th><th>Provider</th><th>Transport</th><th>Findings</th></tr>
+<tr><td>1</td><td>full</td><td><span class="good">VERIFIED</span></td><td>gpt-5.6-terra</td><td>openai</td><td>api</td><td>0</td></tr>
+</table>
+<h2>Test runs</h2>
+<table>
+<tr><th>Suite</th><th>Stage</th><th>Outcome</th><th>Duration</th><th>Passed</th><th>Failed</th><th>Skipped</th><th>Command</th></tr>
+<tr><td>node</td><td>final-full</td><td><span class="good">passed</span></td><td>2s</td><td>34</td><td>0</td><td>0</td><td><span class="mono">node --test --test-timeout=60000 &quot;tests/**/*.test.js&quot;</span></td></tr>
+</table>
+<h2>Jobs</h2>
+<div><strong>close</strong> exit <span class="good">0</span> <span class="muted">(passed -- output not carried; dabbler transcript --full carries it)</span></div>
+<div><strong>run-of-record-node</strong> exit <span class="good">0</span> <span class="muted">(passed -- output not carried; dabbler transcript --full carries it)</span></div>
+<div><strong>verification</strong> exit <span class="good">0</span> <span class="muted">(passed -- output not carried; dabbler transcript --full carries it)</span></div>
+</main>
+</body>
+</html>
