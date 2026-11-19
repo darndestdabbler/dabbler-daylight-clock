@@ -1,0 +1,973 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dozenal Solar Instrument</title>
+    <meta name="color-scheme" content="light dark">
+    <meta name="theme-color" content="#e0e0e0" id="meta-theme-color">
+    <link rel="manifest" href="manifest.webmanifest">
+    <style>
+        /* ===========================================
+           THEME TOKENS
+           Light is the default; dark applies when the phone is in dark
+           mode (Auto) or when the toggle forces it.
+           =========================================== */
+        :root {
+            --page-bg: #e0e0e0;
+            --card-bg: #ffffff;
+            --card-shadow: rgba(0,0,0,0.15);
+            --control-bg: #f9f9f9;
+            --control-border: #cccccc;
+            --control-text: #333333;
+            --solar-off-bg: #e0e0e0;
+            --solar-off-text: #555555;
+            --debug-bg: #f4f4f4;
+            --debug-text: #666666;
+
+            --face: #ffffff;             /* clock face plate */
+            --night: #000000;            /* bezel + "never daylight" (shows through tick holes) */
+            --numeral: #222222;
+            --colon: #666666;
+            --regular-time: #666666;
+            --daylight-today: #fcc000;
+            --daylight-longest: #009E73;
+            --shortest-marker: #0072B2;
+        }
+        :root[data-theme="dark"] {
+            --page-bg: #000000;
+            --card-bg: #121212;
+            --card-shadow: rgba(0,0,0,0.6);
+            --control-bg: #1e1e1e;
+            --control-border: #3a3a3a;
+            --control-text: #dddddd;
+            --solar-off-bg: #2a2a2a;
+            --solar-off-text: #bbbbbb;
+            --debug-bg: #1a1a1a;
+            --debug-text: #8a8a8a;
+
+            --face: #121212;
+            --night: #8a8a8a;            /* gray ticks + bezel on a dark face */
+            --numeral: #e6e6e6;
+            --colon: #9a9a9a;
+            --regular-time: #a0a0a0;
+            --daylight-today: #d9a600;   /* slightly dimmer gold */
+            --daylight-longest: #00876a; /* slightly dimmer green */
+            --shortest-marker: #56B4E9;  /* lighter blue so it reads on black */
+        }
+        @media (prefers-color-scheme: dark) {
+            :root:not([data-theme="light"]) {
+            --page-bg: #000000;
+            --card-bg: #121212;
+            --card-shadow: rgba(0,0,0,0.6);
+            --control-bg: #1e1e1e;
+            --control-border: #3a3a3a;
+            --control-text: #dddddd;
+            --solar-off-bg: #2a2a2a;
+            --solar-off-text: #bbbbbb;
+            --debug-bg: #1a1a1a;
+            --debug-text: #8a8a8a;
+
+            --face: #121212;
+            --night: #8a8a8a;            /* gray ticks + bezel on a dark face */
+            --numeral: #e6e6e6;
+            --colon: #9a9a9a;
+            --regular-time: #a0a0a0;
+            --daylight-today: #d9a600;   /* slightly dimmer gold */
+            --daylight-longest: #00876a; /* slightly dimmer green */
+            --shortest-marker: #56B4E9;  /* lighter blue so it reads on black */
+            }
+        }
+
+        body {
+            background-color: var(--page-bg);
+            color: var(--control-text);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            transition: background-color 0.3s ease;
+        }
+
+        .clock-wrapper {
+            box-sizing: border-box;      /* padding counts inside the 90vmin */
+            width: 90vmin;
+            max-width: 600px;
+            height: auto;
+            background: var(--card-bg);
+            padding: 40px;
+            border-radius: 40px;
+            box-shadow: 0 20px 50px var(--card-shadow);
+            transition: background-color 0.3s ease;
+        }
+
+        svg {
+            width: 100%;
+            height: 100%;
+            display: block;
+            overflow: visible;
+        }
+
+        text {
+            font-family: 'Arial', sans-serif;
+            font-weight: bold;
+        }
+
+        /* Themed SVG parts (CSS fill overrides presentation attributes) */
+        .t-face    { fill: var(--face); }
+        .t-night   { fill: var(--night); }
+        .t-today   { fill: var(--daylight-today); }
+        .t-longest { fill: var(--daylight-longest); }
+
+        .hand-path {
+            vector-effect: non-scaling-stroke;
+            shape-rendering: geometricPrecision;
+        }
+
+        .controls {
+            margin-top: 25px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            background: var(--card-bg);
+            padding: 10px 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px var(--card-shadow);
+            align-items: center;
+            justify-content: center;
+        }
+
+        select, button, a#link-about {
+            padding: 8px 12px;
+            border-radius: 6px;
+            border: 1px solid var(--control-border);
+            font-size: 1rem;
+            background-color: var(--control-bg);
+            color: var(--control-text);
+            cursor: pointer;
+        }
+
+        button#btn-solar {
+            background-color: var(--solar-off-bg);
+            border-color: var(--control-border);
+            color: var(--solar-off-text);
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        button#btn-solar.active {
+            background-color: #fcc000;
+            border-color: #e6b000;
+            color: #333;
+        }
+
+        a#link-about {
+            text-decoration: none;
+        }
+
+        /* Time-system toggle: both systems side by side, on a row of its own */
+        .system-toggle {
+            flex-basis: 100%;
+            display: flex;
+            flex-wrap: nowrap;
+            justify-content: center;
+        }
+        .system-toggle button {
+            white-space: nowrap;
+        }
+        .system-toggle button:first-child {
+            border-top-right-radius: 0;
+            border-bottom-right-radius: 0;
+        }
+        .system-toggle button:last-child {
+            border-top-left-radius: 0;
+            border-bottom-left-radius: 0;
+            margin-left: -1px;
+        }
+        .system-toggle button[aria-pressed="true"] {
+            background-color: var(--control-text);
+            border-color: var(--control-text);
+            color: var(--card-bg);
+        }
+
+        #date-override {
+            font-size: 0.85rem;
+        }
+
+        #debug-panel {
+            margin-top: 10px;
+            padding: 8px 16px;
+            background: var(--debug-bg);
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 0.75rem;
+            color: var(--debug-text);
+            max-width: 600px;
+            line-height: 1.5;
+            white-space: pre-wrap;
+            display: none;
+        }
+        #debug-panel.visible { display: block; }
+
+        /* Phone width: a slimmer card, and controls as wide as the card */
+        @media (max-width: 480px) {
+            body { box-sizing: border-box; padding: 12px 0; }
+            .clock-wrapper {
+                padding: 16px;
+                border-radius: 24px;
+            }
+            .controls {
+                box-sizing: border-box;
+                width: 90vw;
+                margin-top: 16px;
+                padding: 10px;
+                gap: 10px;
+            }
+            #debug-panel { box-sizing: border-box; max-width: 90vw; overflow-wrap: anywhere; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="clock-wrapper">
+    <svg viewBox="-120 -120 240 300" version="1.1" id="main-svg" xmlns="http://www.w3.org/2000/svg">
+    
+    <defs>
+        <rect id="tick-major" width="4" height="16" x="-2" y="-90" />
+        <rect id="tick-minor" width="4" height="8" x="-2" y="-90" />
+        <rect id="tick-hour" width="2.5" height="6" x="-1.25" y="-97" fill="#cc79a7" stroke="none" />
+        
+        <path id="hand-dour" style="fill:#cc79a7;fill-opacity:1" d="M -2,16 L -6,0 l 4,-82 H 2 L 6,0 L 2,16 Z M 0,-1 C -0.554,-1 -1,-0.554 -1,0 C -1,0.554 -0.554,1 0,1 C 0.554,1 1,0.554 1,0 C 1,-0.554 0.554,-1 0,-1 Z" />
+        <path id="hand-zan" style="fill:#56b3e9;fill-opacity:1" d="M -1.33333 16 L -4 0 L -1.33333 -86 L 1.33333 -86 L 4 0 L 1.33333 16 Z M 0 -1 C -0.554 -1 -1 -0.554 -1 0 C -1 0.554 -0.554 1 0 1 C 0.554 1 1 0.554 1 0 C 1 -0.554 0.554 -1 0 -1 Z" />
+        <path id="hand-mec" style="fill:#009e74;fill-opacity:1;stroke:none" d="M -0.66666,16 L -2,0 L -0.66666,-90 H 0.66666 L 2,0 L 0.66666,16 Z M 0,-1 C -0.554,-1 -1,-0.554 -1,0 C -1,0.554 -0.554,1 0,1 C 0.554,1 1,0.554 1,0 C 1,-0.554 0.554,-1 0,-1 Z" />
+
+        <path id="asset-glyph-sun" style="fill:#fcc000;stroke:none;" d="M 0.603811 12.1101 C -0.472986 13.4674 -0.386888 15.7695 -0.180406 17.5075 C 0.802396 18.9998 1.0457 15.802 1.19311 14.9901 C 1.20596 14.1004 1.49028 12.5973 0.603811 12.1101 Z M -12.2322 16.9198 C -13.1078 18.0972 -10.7346 19.876 -9.93476 20.8906 C -9.21896 21.989 -7.77973 21.4645 -8.9048 20.3129 C -9.76752 19.0009 -10.6849 17.4831 -12.2322 16.9198 Z M 13.0694 17.7873 C 11.4112 18.6099 9.81719 19.7969 8.84083 21.4026 C 9.40842 22.6703 11.3392 20.4776 12.2299 19.9232 C 12.6198 19.4724 14.151 18.1625 13.0694 17.7873 Z M 0.530107 20.0069 C -5.04957 20.0719 -10.1167 24.9182 -10.2429 30.5354 C -10.6088 36.0452 -5.34373 41.0729 0.13934 40.4671 C 4.96255 40.102 9.29096 35.735 9.02686 30.7953 C 8.79564 26.6653 5.21982 22.8515 1.06069 22.5666 C -2.28719 22.3501 -5.51963 24.7548 -6.2679 28.0276 C -7.15222 30.954 -5.87644 34.6191 -2.85378 35.6867 C -0.150824 36.7814 3.6151 36.1479 4.88728 33.2435 C 6.15199 30.7459 4.24109 27.1043 1.28049 27.3271 C -0.96154 27.2468 -2.78153 30.1285 -1.27143 31.9583 C -0.337136 33.1818 2.31848 32.7087 2.09414 30.94 C 2.02113 31.636 -0.781601 32.7938 -0.975311 30.7684 C -1.28944 28.7201 1.51142 27.5735 2.9308 28.9042 C 4.73815 30.3484 4.14463 33.5007 1.98983 34.2784 C -0.551913 35.3688 -4.27078 34.0452 -4.61511 31.0398 C -5.07966 28.1814 -3.08144 25.0278 -0.0949927 24.7216 C 3.34693 24.2832 6.52198 27.4774 6.79324 30.7949 C 7.12278 35.8419 1.23365 39.7778 -3.37145 37.9136 C -6.9186 36.6489 -9.24115 32.6914 -8.43146 28.9786 C -7.57751 23.4595 -1.22682 19.4692 4.07128 21.4908 C 7.09252 22.5681 9.35613 25.2258 10.2535 28.2685 C 10.0416 24.3501 6.63724 21.1503 2.95205 20.2602 C 2.15997 20.0725 1.34369 19.9904 0.530107 20.0069 Z M -16.4854 29.1492 C -17.6566 28.8492 -19.1853 30.1745 -17.2536 30.3557 C -15.8212 30.5147 -13.0617 31.4144 -12.4088 29.9422 C -13.6301 29.3527 -15.1298 29.1962 -16.4854 29.1492 Z M 13.7847 30.0885 C 12.5011 29.8068 11.7824 31.198 13.4267 31.2285 C 14.9808 31.5391 16.7717 32.0169 18.2312 31.2082 C 17.7919 29.949 15.4985 30.2701 14.2598 30.0711 L 14.0206 30.0763 Z M -9.18101 38.8414 C -10.8451 39.6903 -12.6398 40.7806 -13.4646 42.5401 C -12.663 43.7337 -10.8221 41.3352 -9.92497 40.779 C -9.63301 40.3613 -8.13048 39.1729 -9.18101 38.8414 Z M 8.81626 39.1939 C 7.97617 40.1548 9.89361 41.6621 10.4723 42.6255 C 10.9095 43.5753 13.4477 44.5101 12.2341 42.7242 C 11.3388 41.3751 10.3369 39.8693 8.81626 39.1939 Z M -0.240962 42.7459 C -1.17595 43.7175 -1.12373 45.5183 -1.2468 46.8808 C -1.54616 48.0519 -0.22121 49.5811 -0.0398761 47.6491 C 0.161179 46.1499 0.857581 43.9153 -0.240962 42.7459 Z" />
+
+        <path id="asset-glyph-time-separator" style="stroke:none;" d="M 0,-5.25 A 1.5,1.5 0 0 0 -1.5,-3.75 A 1.5,1.5 0 0 0 0,-2.25 A 1.5,1.5 0 0 0 1.5,-3.75 A 1.5,1.5 0 0 0 0,-5.25 Z m 0,7.5 A 1.5,1.5 0 0 0 -1.5,3.75 A 1.5,1.5 0 0 0 0,5.25 A 1.5,1.5 0 0 0 1.5,3.75 A 1.5,1.5 0 0 0 0,2.25 Z" />
+        <text id="asset-glyph-0" x="0" y="0" text-anchor="middle" dominant-baseline="central">0</text>
+        <text id="asset-glyph-1" x="0" y="0" text-anchor="middle" dominant-baseline="central">1</text>
+        <text id="asset-glyph-2" x="0" y="0" text-anchor="middle" dominant-baseline="central">2</text>
+        <text id="asset-glyph-3" x="0" y="0" text-anchor="middle" dominant-baseline="central">3</text>
+        <text id="asset-glyph-4" x="0" y="0" text-anchor="middle" dominant-baseline="central">4</text>
+        <text id="asset-glyph-5" x="0" y="0" text-anchor="middle" dominant-baseline="central">5</text>
+        <text id="asset-glyph-6" x="0" y="0" text-anchor="middle" dominant-baseline="central">6</text>
+        <text id="asset-glyph-7" x="0" y="0" text-anchor="middle" dominant-baseline="central">7</text>
+        <text id="asset-glyph-8" x="0" y="0" text-anchor="middle" dominant-baseline="central">8</text>
+        <text id="asset-glyph-9" x="0" y="0" text-anchor="middle" dominant-baseline="central">9</text>
+
+        <mask id="mask-face-plate">
+            <circle cx="0" cy="0" r="98" fill="white" />
+            <g id="mask-ticks-container"></g>
+        </mask>
+    </defs>
+
+    <!-- Outermost black border -->
+    <circle r="105" class="t-night" />
+
+    <!-- Solar wedge layers (bottom to top: black, green, gold).
+         All wedges share the same zero: each one answers "when is it light?" -->
+    <g id="layer-solar-wedges" style="visibility: hidden;">
+        <!-- Level 3: Black circle — never daylight on any day of the year -->
+        <circle r="103" class="t-night" />
+
+        <!-- Level 2: Green wedge — daylight on the longest day of the year -->
+        <path id="wedge-longest" class="t-longest" d="" />
+
+        <!-- Level 1: Gold wedge — today's actual daylight (on top) -->
+        <path id="wedge-today" class="t-today" d="" />
+    </g>
+
+    <!-- White clock face with tick-mark holes -->
+    <circle r="98" class="t-face" mask="url(#mask-face-plate)" />
+
+    <!-- Hour ticks in the hour hand's rose, at the edge and beneath the hands -->
+    <g id="hour-ticks"></g>
+
+    <!-- Shortest-day marker: a limit, not a quantity, so it's drawn as a
+         thin line across the rim (plus a pointer outside the dial) at the
+         shortest day's sunrise and sunset. Drawn above the face plate. -->
+    <g id="layer-shortest-marker" style="visibility: hidden;">
+        <g id="marker-shortest-rise"></g>
+        <g id="marker-shortest-set"></g>
+    </g>
+
+    <g id="layer-content">
+        <g id="icon-sun-group" style="visibility: hidden;">
+             <use href="#asset-glyph-sun" />
+        </g>
+    </g>
+
+    <g id="layer-hands">
+        <use href="#hand-dour" id="use-hand-dour" />
+        <use href="#hand-zan"  id="use-hand-zan" />
+        <use href="#hand-mec"  id="use-hand-mec" />
+    </g>
+
+    <!-- Numbers float above hands for readability -->
+    <g id="analog-numbers"></g>
+
+    <g id="digital-display"></g>
+
+    <!-- The other system's reading, for reference, below the readout -->
+    <g id="other-reading"></g>
+
+    </svg>
+</div>
+
+<div class="controls">
+    <div class="system-toggle" role="group" aria-label="Time system">
+        <button type="button" data-system="24x60x60" aria-pressed="false">24 × 60 × 60</button>
+        <button type="button" data-system="48x48x48" aria-pressed="false">48 × 48 × 48</button>
+    </div>
+    <button id="btn-solar">☀ Show Daylight Time</button>
+    <select id="timezone-select">
+        <option value="local">Local Time</option>
+        <option value="UTC">UTC (Greenwich)</option>
+        <option value="America/New_York">New York</option>
+        <option value="Europe/London">London</option>
+        <option value="Asia/Tokyo">Tokyo</option>
+        <option value="Africa/Johannesburg">Cape Town</option>
+        <option value="America/Anchorage">Fairbanks</option>
+    </select>
+    <select id="latitude-select" autocomplete="off" title="Latitude the daylight is drawn for">
+        <option value="current" selected>Latitude (current)</option>
+        <option value="90">90° N</option>
+        <option value="60">60° N</option>
+        <option value="30">30° N</option>
+        <option value="0">0° (Equator)</option>
+        <option value="-30">30° S</option>
+        <option value="-60">60° S</option>
+        <option value="-90">90° S</option>
+    </select>
+    <select id="date-override">
+        <option value="today">Today (live)</option>
+        <option value="vernal">Vernal Equinox (Mar 20)</option>
+        <option value="summer">Summer Solstice (Jun 21)</option>
+        <option value="autumnal">Autumnal Equinox (Sep 22)</option>
+        <option value="winter">Winter Solstice (Dec 21)</option>
+    </select>
+    <select id="theme-select" title="Light / dark appearance">
+        <option value="auto">&#9680; Auto (phone setting)</option>
+        <option value="light">&#9728; Light</option>
+        <option value="dark">&#9790; Dark</option>
+    </select>
+    <a id="link-about" href="about.html">About</a>
+</div>
+
+<div id="debug-panel"></div>
+
+<script src="clock-core.js"></script>
+<script>
+    // ===========================================
+    // CONFIGURATION
+    // ===========================================
+    const CONFIG = {
+        radiusMajor: 60, 
+        radiusMinor: 60, 
+        scaleMajor: 1.75,
+        scaleMinor: 1.15,
+        
+        digitalY: 130,
+        digitalScaleX: 1.75,
+        digitalScaleY: 1.75,
+        digitalGroupSpacing: 40,
+        
+        digitalColorDours: "#cc79a7", 
+        digitalColorZans: "#56b3e9", 
+        digitalColorMecs: "#009e74", 
+        digitalColorColons: "var(--colon)",
+
+        // The other system's reading, beneath the readout
+        otherReadingY: 158,
+        otherReadingScale: 0.9,
+        otherReadingColor: "var(--regular-time)",
+
+        spacing: -2.0
+    };
+
+    // The time system the face and readout are drawn in (see ClockCore.SYSTEMS)
+    let system = '24x60x60';
+
+    const CX_FACE = 0;
+    const CY_FACE = 0;
+    const WEDGE_RADIUS = 103;
+
+    // Shortest-day marker styling (Okabe-Ito blue — color-blind safe)
+    const MARKER = {
+        color: "var(--shortest-marker)",
+        lineInner: 90,      // line runs across the rim from here...
+        lineOuter: 105,     // ...to the outside of the black border
+        strokeWidth: 1.6,
+        pointerTip: 106.5,  // inward-pointing triangle just outside the dial
+        pointerBase: 113,
+        pointerHalfWidth: 3
+    };
+    
+    // Location database for timezone options
+    const TZ_LOCATIONS = {
+        'UTC':              { lat: 51.4769, lng: -0.0005 },
+        'America/New_York': { lat: 40.7128, lng: -74.0060 },
+        'Europe/London':    { lat: 51.5074, lng: -0.1278 },
+        'Asia/Tokyo':       { lat: 35.6762, lng: 139.6503 },
+        'Africa/Johannesburg': { lat: -33.9249, lng: 18.4241 },   // Cape Town
+        'America/Anchorage':   { lat: 64.8378, lng: -147.7164 }   // Fairbanks
+    };
+    
+    let userLoc = null;
+    let effectiveLoc = null;
+    let solarEnabled = false;
+    let locationPending = false;
+    let lastDay = new Date().getDate();
+    let dateOverride = null;
+    let debugLines = [];
+
+    // Apply Transform Origins
+    ['hand-dour', 'hand-zan', 'hand-mec'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.style.transformOrigin = CX_FACE + 'px ' + CY_FACE + 'px';
+    });
+
+    // ===========================================
+    // DEBUG HELPER
+    // ===========================================
+    function dbg(msg) {
+        debugLines.push(msg);
+        var panel = document.getElementById('debug-panel');
+        panel.className = 'visible';
+        panel.innerText = debugLines.slice(-14).join('\n');
+    }
+
+    // ===========================================
+    // EVENT LISTENERS (no inline handlers — works in sandboxed iframes)
+    // ===========================================
+    document.getElementById('btn-solar').addEventListener('click', function() {
+        var hiding = solarEnabled;
+        toggleSolar();
+        try {
+            if (hiding) localStorage.setItem(DAYLIGHT_KEY, 'hidden');
+            else localStorage.removeItem(DAYLIGHT_KEY);
+        } catch (e) { /* storage unavailable */ }
+    });
+    document.getElementById('timezone-select').addEventListener('change', function() { onTimezoneChange(); });
+    document.getElementById('latitude-select').addEventListener('change', function() {
+        if (solarEnabled && effectiveLoc) updateSolarGeometry();
+    });
+    document.getElementById('date-override').addEventListener('change', function() { onDateOverrideChange(); });
+    document.getElementById('theme-select').addEventListener('change', function() { setTheme(this.value, true); });
+    document.querySelectorAll('.system-toggle button').forEach(function(b) {
+        b.addEventListener('click', function() { setSystem(this.getAttribute('data-system'), true); });
+    });
+
+    // ===========================================
+    // THEME (Auto follows the phone's dark-mode setting; Light/Dark override)
+    // ===========================================
+    const THEME_KEY = 'quadi-dozenal-theme';
+    const darkQuery = window.matchMedia ? window.matchMedia('(prefers-color-scheme: dark)') : null;
+
+    function setTheme(choice, remember) {
+        var root = document.documentElement;
+        if (choice === 'light' || choice === 'dark') root.setAttribute('data-theme', choice);
+        else { root.removeAttribute('data-theme'); choice = 'auto'; }
+        document.getElementById('theme-select').value = choice;
+        if (remember) {
+            try { localStorage.setItem(THEME_KEY, choice); } catch (e) { /* storage unavailable */ }
+        }
+        syncThemeColor();
+    }
+
+    // Keep the phone's status-bar / browser-chrome color matched to the page
+    function syncThemeColor() {
+        var bg = getComputedStyle(document.documentElement).getPropertyValue('--page-bg').trim();
+        document.getElementById('meta-theme-color').setAttribute('content', bg || '#e0e0e0');
+    }
+
+    (function initTheme() {
+        var saved = 'auto';
+        try { saved = localStorage.getItem(THEME_KEY) || 'auto'; } catch (e) { /* storage unavailable */ }
+        setTheme(saved, false);
+        if (darkQuery) {
+            var onSystemChange = function() { syncThemeColor(); };
+            if (darkQuery.addEventListener) darkQuery.addEventListener('change', onSystemChange);
+            else if (darkQuery.addListener) darkQuery.addListener(onSystemChange);
+        }
+    })();
+
+    // ===========================================
+    // TIME SYSTEM (24 x 60 x 60 by default; the choice is remembered)
+    // ===========================================
+    const SYSTEM_KEY = 'quadi-dozenal-system';
+
+    function setSystem(choice, remember) {
+        if (!Object.prototype.hasOwnProperty.call(ClockCore.SYSTEMS, choice)) choice = '24x60x60';
+        system = choice;
+        document.querySelectorAll('.system-toggle button').forEach(function(b) {
+            b.setAttribute('aria-pressed', String(b.getAttribute('data-system') === choice));
+        });
+        if (remember) {
+            try { localStorage.setItem(SYSTEM_KEY, choice); } catch (e) { /* storage unavailable */ }
+        }
+        generateTicks();
+        drawAnalogFace();
+    }
+
+    // ===========================================
+    // FACE: MASK TICKS AND HOUR TICKS
+    // ===========================================
+    function generateTicks() {
+        var face = ClockCore.faceLayout(system);
+        var maskGroup = document.getElementById('mask-ticks-container');
+        maskGroup.innerHTML = "";
+        face.ticks.forEach(function(tick) {
+            var ref = tick.major ? '#tick-major' : '#tick-minor';
+            var useMask = document.createElementNS("http://www.w3.org/2000/svg", "use");
+            useMask.setAttribute("href", ref);
+            useMask.setAttribute("transform", "rotate(" + tick.angle + ")");
+            useMask.setAttribute("fill", "black");
+            maskGroup.appendChild(useMask);
+        });
+        // Hour ticks: solid, between the minute ticks' ends (90) and the edge (98)
+        var hourGroup = document.getElementById('hour-ticks');
+        hourGroup.innerHTML = "";
+        face.hourTicks.forEach(function(tick) {
+            var useHour = document.createElementNS("http://www.w3.org/2000/svg", "use");
+            useHour.setAttribute("href", "#tick-hour");
+            useHour.setAttribute("transform", "rotate(" + tick.angle + ")");
+            hourGroup.appendChild(useHour);
+        });
+    }
+
+    // ===========================================
+    // TIMEZONE / LOCATION PAIRING
+    // ===========================================
+    function getEffectiveLocation() {
+        var tzVal = document.getElementById('timezone-select').value;
+        if (tzVal === 'local') {
+            return userLoc; // may be null
+        }
+        return TZ_LOCATIONS[tzVal] || null;
+    }
+
+    // The latitude the daylight is drawn for: the place's own ('current'),
+    // or a fixed one from the latitude dropdown. Longitude stays the place's.
+    function drawLatitude() {
+        var val = document.getElementById('latitude-select').value;
+        return val === 'current' ? effectiveLoc.lat : Number(val);
+    }
+
+    // Label the 'current' option with the place's latitude, to a whole degree
+    function updateCurrentLatitudeLabel() {
+        var label = 'Latitude';
+        if (effectiveLoc) {
+            var deg = Math.round(effectiveLoc.lat);
+            label = deg === 0 ? '0°' : Math.abs(deg) + '° ' + (deg > 0 ? 'N' : 'S');
+        }
+        document.querySelector('#latitude-select option[value="current"]').textContent = label + ' (current)';
+    }
+
+    function onTimezoneChange() {
+        effectiveLoc = getEffectiveLocation();
+        updateCurrentLatitudeLabel();
+        dbg('TZ changed -> effectiveLoc: ' + JSON.stringify(effectiveLoc));
+        if (solarEnabled && effectiveLoc) {
+            updateSolarGeometry();
+        }
+    }
+
+    function onDateOverrideChange() {
+        var val = document.getElementById('date-override').value;
+        var year = new Date().getFullYear();
+        
+        switch(val) {
+            case 'vernal':   dateOverride = new Date(year, 2, 20, 12, 0, 0); break;
+            case 'summer':   dateOverride = new Date(year, 5, 21, 12, 0, 0); break;
+            case 'autumnal': dateOverride = new Date(year, 8, 22, 12, 0, 0); break;
+            case 'winter':   dateOverride = new Date(year, 11, 21, 12, 0, 0); break;
+            default:         dateOverride = null; break;
+        }
+        
+        dbg('Date override -> ' + (dateOverride ? dateOverride.toDateString() : 'live'));
+        if (solarEnabled && effectiveLoc) {
+            updateSolarGeometry();
+        }
+    }
+
+    // ===========================================
+    // SOLAR ENGINE
+    // ===========================================
+    function toggleSolar() {
+        var btn = document.getElementById('btn-solar');
+        var layer = document.getElementById('layer-solar-wedges');
+        var icon = document.getElementById('icon-sun-group');
+        
+        if (!solarEnabled) {
+            effectiveLoc = getEffectiveLocation();
+            dbg('Toggle ON — effectiveLoc: ' + JSON.stringify(effectiveLoc));
+            
+            if (effectiveLoc) {
+                enableSolar(btn, layer, icon);
+            } else {
+                // Need geolocation for "Local Time" mode
+                if (typeof navigator !== 'undefined' && navigator.geolocation) {
+                    if (locationPending) return;
+                    locationPending = true;
+                    btn.innerText = "Requesting Location...";
+                    dbg('Requesting geolocation...');
+                    navigator.geolocation.getCurrentPosition(
+                        function(pos) {
+                            locationPending = false;
+                            userLoc = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+                            effectiveLoc = userLoc;
+                            dbg('Geolocation OK: ' + JSON.stringify(userLoc));
+                            enableSolar(btn, layer, icon);
+                        },
+                        function(err) {
+                            locationPending = false;
+                            dbg('Geolocation FAILED (code ' + err.code + '): ' + err.message);
+                            var fallback = guessFallbackLocation();
+                            if (fallback) {
+                                effectiveLoc = fallback;
+                                dbg('Using fallback location: ' + JSON.stringify(fallback));
+                                enableSolar(btn, layer, icon);
+                            } else {
+                                btn.innerText = "☀ Show Daylight Time";
+                                dbg('No fallback. Please select a city from the timezone dropdown first.');
+                            }
+                        },
+                        { timeout: 10000, maximumAge: 600000 }
+                    );
+                } else {
+                    dbg('Geolocation API not available in this environment.');
+                    var fallback = guessFallbackLocation();
+                    if (fallback) {
+                        effectiveLoc = fallback;
+                        dbg('Using fallback: ' + JSON.stringify(fallback));
+                        enableSolar(btn, layer, icon);
+                    } else {
+                        dbg('Please select a city timezone, then try again.');
+                    }
+                }
+            }
+        } else {
+            solarEnabled = false;
+            btn.classList.remove("active");
+            btn.innerText = "☀ Show Daylight Time";
+            layer.style.visibility = "hidden";
+            icon.style.visibility = "hidden";
+            document.getElementById('layer-shortest-marker').style.visibility = "hidden";
+            dbg('Solar OFF');
+        }
+    }
+
+    function enableSolar(btn, layer, icon) {
+        solarEnabled = true;
+        btn.classList.add("active");
+        btn.innerText = "☀ Hide Daylight Time";
+        layer.style.visibility = "visible";
+        icon.style.visibility = "visible";
+        document.getElementById('layer-shortest-marker').style.visibility = "visible";
+        updateCurrentLatitudeLabel();
+        updateSolarGeometry();
+        dbg('Solar ON — wedges should now be visible');
+    }
+
+    function guessFallbackLocation() {
+        try {
+            var browserTz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+            dbg('Browser TZ: ' + browserTz);
+            if (TZ_LOCATIONS[browserTz]) return TZ_LOCATIONS[browserTz];
+            if (browserTz.indexOf('America/') === 0) return TZ_LOCATIONS['America/New_York'];
+            if (browserTz.indexOf('Europe/') === 0)  return TZ_LOCATIONS['Europe/London'];
+            if (browserTz.indexOf('Asia/') === 0)    return TZ_LOCATIONS['Asia/Tokyo'];
+        } catch(e) {
+            dbg('Could not detect browser timezone');
+        }
+        return null;
+    }
+
+    function updateSolarGeometry() {
+        if (!solarEnabled || !effectiveLoc) {
+            dbg('updateSolarGeometry skipped: enabled=' + solarEnabled + ' loc=' + !!effectiveLoc);
+            return;
+        }
+        
+        var tzSelect = document.getElementById('timezone-select').value;
+        var tz = (tzSelect === 'local') ? Intl.DateTimeFormat().resolvedOptions().timeZone : tzSelect;
+        var now = dateOverride || new Date();
+        var year = now.getFullYear();
+        var r = WEDGE_RADIUS;
+        var lat = drawLatitude();
+        var lng = effectiveLoc.lng;
+
+        dbg('Computing wedges: tz=' + tz + ' lat=' + lat.toFixed(2) + ' lng=' + lng.toFixed(2));
+
+        var juneDate = new Date(year, 5, 21, 12, 0, 0);
+        var decDate  = new Date(year, 11, 21, 12, 0, 0);
+        
+        var juneAngles = ClockCore.getSolarAngles(juneDate, lat, lng, tz);
+        var decAngles  = ClockCore.getSolarAngles(decDate, lat, lng, tz);
+        
+        // Clear previous geometry
+        document.getElementById('wedge-longest').setAttribute("d", "");
+        document.getElementById('marker-shortest-rise').innerHTML = "";
+        document.getElementById('marker-shortest-set').innerHTML = "";
+        
+        // Longest vs. shortest day depends on hemisphere: in the south,
+        // the June solstice is the shortest day. Pick by actual length,
+        // a polar day counting as the whole day and a polar night as none.
+        var juneLen = daylightSpan(juneAngles, juneDate, lat);
+        var decLen  = daylightSpan(decAngles, decDate, lat);
+        var juneIsLongest = juneLen >= decLen;
+        var longest  = juneIsLongest ? juneAngles : decAngles;
+        var shortest = juneIsLongest ? decAngles : juneAngles;
+
+        dbg('Longest day:  ' + (longest ? 'rise=' + longest.riseAngle.toFixed(1) + '° set=' + longest.setAngle.toFixed(1) + '° offset=' + longest.offset + 'm' : 'no sunrise or sunset'));
+        dbg('Shortest day: ' + (shortest ? 'rise=' + shortest.riseAngle.toFixed(1) + '° set=' + shortest.setAngle.toFixed(1) + '° offset=' + shortest.offset + 'm' : 'no sunrise or sunset'));
+
+        // GREEN: full daylight span of the longest day (same zero as gold);
+        // the whole disc when it is a polar day
+        if (longest) {
+            var gStart = longest.riseAngle;
+            var gEnd = gStart + ClockCore.spanDegrees(longest.riseAngle, longest.setAngle);
+            document.getElementById('wedge-longest').setAttribute("d", ClockCore.describeArc(0, 0, r, gStart, gEnd));
+        } else if (Math.max(juneLen, decLen) === 360) {
+            document.getElementById('wedge-longest').setAttribute("d", ClockCore.describeDisc(0, 0, r));
+        }
+
+        // BLUE MARKER: shortest day's sunrise and sunset, when it has them
+        if (shortest) {
+            drawShortestMarker('marker-shortest-rise', shortest.riseAngle);
+            drawShortestMarker('marker-shortest-set', shortest.setAngle);
+        }
+    }
+
+    /**
+     * A day's daylight in degrees of the dial: sunrise to sunset, or, on a
+     * day with neither (getSolarAngles null), 360 for a polar day and 0 for
+     * a polar night.
+     */
+    function daylightSpan(angles, date, lat) {
+        if (angles) return ClockCore.spanDegrees(angles.riseAngle, angles.setAngle);
+        return ClockCore.polarState(date, lat) === 'day' ? 360 : 0;
+    }
+
+    /**
+     * Draw one shortest-day marker at a clock angle: a radial line across
+     * the rim plus an inward-pointing triangle just outside the dial.
+     */
+    function drawShortestMarker(groupId, angleDeg) {
+        var NS = "http://www.w3.org/2000/svg";
+        var g = document.getElementById(groupId);
+        g.setAttribute("transform", "rotate(" + angleDeg + ")");
+        
+        // Geometry is built pointing up (0° = top); the rotate places it.
+        var line = document.createElementNS(NS, "line");
+        line.setAttribute("x1", 0); line.setAttribute("y1", -MARKER.lineInner);
+        line.setAttribute("x2", 0); line.setAttribute("y2", -MARKER.lineOuter);
+        line.style.stroke = MARKER.color;
+        line.setAttribute("stroke-width", MARKER.strokeWidth);
+        line.setAttribute("stroke-linecap", "round");
+        g.appendChild(line);
+        
+        var w = MARKER.pointerHalfWidth;
+        var tri = document.createElementNS(NS, "path");
+        tri.setAttribute("d",
+            "M 0 " + (-MARKER.pointerTip) +
+            " L " + w + " " + (-MARKER.pointerBase) +
+            " L " + (-w) + " " + (-MARKER.pointerBase) + " Z");
+        tri.style.fill = MARKER.color;
+        tri.style.stroke = MARKER.color;
+        tri.setAttribute("stroke-width", 0.6);
+        tri.setAttribute("stroke-linejoin", "round");
+        g.appendChild(tri);
+    }
+
+    // ===========================================
+    // RENDERING & UPDATE
+    // ===========================================
+    document.querySelectorAll("defs text").forEach(function(t) { t.setAttribute("font-size", "14"); });
+
+    // The middle of a glyph's ink, in glyph units below the central baseline
+    // it is drawn on, measured once. A turned digit turns about it, so its
+    // top and bottom stay level. Canvas measures the ink from the alphabetic
+    // baseline (its 'middle' is not SVG's central), and the SVG itself says
+    // how far below central that baseline lies: two hidden probes of the
+    // glyph, one on each baseline, differ in getBBox().y by exactly that.
+    // Both are measured at MAGNIFY times the glyph's size and scaled back,
+    // since at the glyph's own size browsers round them to whole units.
+    var inkMiddles = {};
+    var MAGNIFY = 100;
+    function inkMiddle(refId) {
+        if (!(refId in inkMiddles)) {
+            var glyph = document.getElementById(refId);
+            var svg = document.getElementById('main-svg');
+            var style = getComputedStyle(glyph);
+            var size = parseFloat(style.fontSize) * MAGNIFY;
+            function probeTop(baseline) {
+                var probe = glyph.cloneNode(true);
+                probe.removeAttribute('id');
+                probe.setAttribute('font-size', size);
+                probe.setAttribute('dominant-baseline', baseline);
+                probe.setAttribute('visibility', 'hidden');
+                svg.appendChild(probe);
+                var top = probe.getBBox().y;
+                svg.removeChild(probe);
+                return top;
+            }
+            var alphabeticBelowCentral = probeTop('central') - probeTop('alphabetic');
+            var ctx = document.createElement('canvas').getContext('2d');
+            ctx.font = style.fontWeight + ' ' + size + 'px ' + style.fontFamily;
+            ctx.textBaseline = 'alphabetic';
+            var ink = ctx.measureText(glyph.textContent);
+            inkMiddles[refId] = (alphabeticBelowCentral +
+                (ink.actualBoundingBoxDescent - ink.actualBoundingBoxAscent) / 2) / MAGNIFY;
+        }
+        return inkMiddles[refId];
+    }
+
+    function createGlyphInstance(char, scaleX, scaleY, color) {
+        var refId = 'asset-glyph-' + char;
+        var rotation = 0;
+        if (char === 'X') { refId = 'asset-glyph-2'; rotation = 180; }
+        else if (char === 'E') { refId = 'asset-glyph-3'; rotation = 180; }
+        else if (char === ':') { refId = 'asset-glyph-time-separator'; }
+
+        var use = document.createElementNS("http://www.w3.org/2000/svg", "use");
+        use.setAttribute("href", "#" + refId);
+        use.style.fill = color;
+        return { element: use, rotation: rotation, pivotY: rotation ? inkMiddle(refId) : 0 };
+    }
+
+    function renderNumber(container, valueStr, centerX, centerY, scaleX, scaleY, color) {
+        var group = document.createElementNS("http://www.w3.org/2000/svg", "g");
+        var charWidth = 10 * scaleX; 
+        var spacing = CONFIG.spacing * scaleX;
+        var totalWidth = (valueStr.length * charWidth) + ((valueStr.length - 1) * spacing);
+        var startX = -(totalWidth / 2) + (charWidth / 2); 
+
+        for (var i = 0; i < valueStr.length; i++) {
+            var char2 = valueStr[i];
+            var glyphObj = createGlyphInstance(char2, scaleX, scaleY, color);
+            var p = glyphObj.element;
+            var localX = startX + (i * (charWidth + spacing));
+            var transform = 'translate(' + localX + ', 0) scale(' + scaleX + ', ' + scaleY + ')';
+            if (glyphObj.rotation !== 0) transform += ' rotate(' + glyphObj.rotation + ', 0, ' + glyphObj.pivotY + ')';
+            p.setAttribute("transform", transform);
+            group.appendChild(p);
+        }
+        group.setAttribute("transform", 'translate(' + centerX + ', ' + centerY + ')');
+        container.appendChild(group);
+    }
+
+    function drawAnalogFace() {
+        var container = document.getElementById('analog-numbers');
+        container.innerHTML = ""; 
+        var face = ClockCore.faceLayout(system);
+        face.labels.forEach(function(label) {
+            var r = label.major ? CONFIG.radiusMajor : CONFIG.radiusMinor;
+            var sc = label.major ? CONFIG.scaleMajor : CONFIG.scaleMinor;
+            var angle = (label.angle - 90) * Math.PI / 180;
+            var x = r * Math.cos(angle);
+            var y = r * Math.sin(angle);
+            renderNumber(container, label.text, x, y, sc, sc, "var(--numeral)");
+        });
+    }
+
+    function updateClock() {
+        var tzSelect = document.getElementById('timezone-select').value;
+        var tz = (tzSelect === 'local') ? Intl.DateTimeFormat().resolvedOptions().timeZone : tzSelect;
+        
+        var now = new Date();
+
+        if (now.getDate() !== lastDay) {
+            lastDay = now.getDate();
+            if (solarEnabled && effectiveLoc) updateSolarGeometry();
+        }
+
+        // Today's Wedge (Gold) - updates every frame
+        if (solarEnabled && effectiveLoc) {
+            var todayDate = dateOverride || now;
+            var todayLat = drawLatitude();
+            var todayAngles = ClockCore.getSolarAngles(todayDate, todayLat, effectiveLoc.lng, tz);
+            var wedgeToday = document.getElementById('wedge-today');
+            if (todayAngles) {
+                var startDeg = todayAngles.riseAngle;
+                var endDeg = todayAngles.setAngle;
+                if (endDeg < startDeg) endDeg += 360;
+                wedgeToday.setAttribute("d",
+                    ClockCore.describeArc(0, 0, WEDGE_RADIUS, startDeg, endDeg));
+            } else {
+                // No sunrise or sunset: the whole disc on a polar day, none on a polar night
+                wedgeToday.setAttribute("d", ClockCore.polarState(todayDate, todayLat) === 'day'
+                    ? ClockCore.describeDisc(0, 0, WEDGE_RADIUS) : "");
+            }
+        }
+
+        var secOfDay = ClockCore.secondsOfDay(now, tz);
+        var hands = ClockCore.handAngles(secOfDay, system);
+        document.getElementById('use-hand-dour').setAttribute("transform", 'rotate(' + hands[0] + ')');
+        document.getElementById('use-hand-zan').setAttribute("transform", 'rotate(' + hands[1] + ')');
+        document.getElementById('use-hand-mec').setAttribute("transform", 'rotate(' + hands[2] + ')');
+
+        var digContainer = document.getElementById('digital-display');
+        digContainer.innerHTML = "";
+        var groups = ClockCore.formatReading(secOfDay, system).split(':');
+
+        var cx = CX_FACE; 
+        var cy = CONFIG.digitalY;
+        var gap = CONFIG.digitalGroupSpacing;
+        var scX = CONFIG.digitalScaleX;
+        var scY = CONFIG.digitalScaleY;
+        
+        var midZan = cx;
+        var midDour = cx - gap;
+        var midMec = cx + gap;
+        
+        renderNumber(digContainer, groups[0], midDour, cy, scX, scY, CONFIG.digitalColorDours);
+        renderNumber(digContainer, ":", midDour + (gap / 2), cy, scX * 0.75, scY * 0.75, CONFIG.digitalColorColons);
+        renderNumber(digContainer, groups[1], midZan, cy, scX, scY, CONFIG.digitalColorZans);
+        renderNumber(digContainer, ":", midZan + (gap / 2), cy, scX * 0.75, scY * 0.75, CONFIG.digitalColorColons);
+        renderNumber(digContainer, groups[2], midMec, cy, scX, scY, CONFIG.digitalColorMecs);
+        
+        // The other system's reading, in the readout's glyphs
+        var other = Object.keys(ClockCore.SYSTEMS).find(function(id) { return id !== system; });
+        var otherContainer = document.getElementById('other-reading');
+        otherContainer.innerHTML = "";
+        renderNumber(otherContainer, ClockCore.formatReading(secOfDay, other), cx, CONFIG.otherReadingY,
+            CONFIG.otherReadingScale, CONFIG.otherReadingScale, CONFIG.otherReadingColor);
+
+        requestAnimationFrame(updateClock);
+    }
+
+    (function initSystem() {
+        var saved = '24x60x60';
+        try { saved = localStorage.getItem(SYSTEM_KEY) || '24x60x60'; } catch (e) { /* storage unavailable */ }
+        setSystem(saved, false);
+    })();
+    updateClock();
+    dbg('Clock initialized.');
+
+    // ===========================================
+    // DAYLIGHT (shown from the start unless hiding it was the last choice)
+    // ===========================================
+    const DAYLIGHT_KEY = 'quadi-dozenal-daylight';
+
+    (function initDaylight() {
+        var saved = null;
+        try { saved = localStorage.getItem(DAYLIGHT_KEY); } catch (e) { /* storage unavailable */ }
+        if (saved !== 'hidden') toggleSolar();
+    })();
+
+    // ===========================================
+    // OFFLINE (the service worker caches the site; it cannot run from file:)
+    // ===========================================
+    if ('serviceWorker' in navigator && location.protocol !== 'file:') {
+        navigator.serviceWorker.register('sw.js').catch(function() { /* no offline cache */ });
+    }
+
+</script>
+
+</body>
+</html>

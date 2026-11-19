@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+    <!-- The daylight clock's mark: midnight at the top, noon at the bottom,
+         the year's longest daylight (green) behind today's (gold). -->
+    <rect width="512" height="512" rx="96" fill="#e0e0e0"/>
+    <circle cx="256" cy="256" r="210" fill="#000000"/>
+    <path d="M256,256 L429.21,156 A200,200 0 1 1 82.79,156 Z" fill="#009E73"/>
+    <path d="M256,256 L455.24,273.43 A200,200 0 0 1 56.76,273.43 Z" fill="#fcc000"/>
+    <circle cx="256" cy="256" r="165" fill="#ffffff"/>
+    <line x1="256" y1="256" x2="316" y2="359.9" stroke="#cc79a7" stroke-width="18" stroke-linecap="round"/>
+    <line x1="256" y1="256" x2="352.4" y2="141.1" stroke="#56b3e9" stroke-width="10" stroke-linecap="round"/>
+    <circle cx="256" cy="256" r="14" fill="#222222"/>
+</svg>
